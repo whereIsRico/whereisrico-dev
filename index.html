@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>whereisrico.dev</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F4F8FD;
+      --bg2: #FFFFFF;
+      --bg3: #EAF3FC;
+      --nav-bg: rgba(255,255,255,0.85);
+      --text: #0C2340;
+      --text2: #3A5A7A;
+      --text3: #7A97B0;
+      --accent: #2176FF;
+      --accent2: #68A4FF;
+      --accent-soft: #D6E8FF;
+      --border: rgba(33, 118, 255, 0.15);
+      --card: #FFFFFF;
+      --mono: 'Space Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --lens-bg: rgba(210, 230, 255, 0.7);
+      --lens-stroke: #2176FF;
+      --footer-bg: #0C2340;
+      --footer-text: #7A97B0;
+    }
+
+    [data-theme="dark"] {
+      --bg: #111418;
+      --bg2: #181C22;
+      --bg3: #1E2330;
+      --nav-bg: rgba(24, 28, 34, 0.9);
+      --text: #E2EAF4;
+      --text2: #8AAAC8;
+      --text3: #4A6480;
+      --accent: #68A4FF;
+      --accent2: #2176FF;
+      --accent-soft: #1A2A45;
+      --border: rgba(104, 164, 255, 0.15);
+      --card: #181C22;
+      --lens-bg: rgba(26, 42, 69, 0.85);
+      --lens-stroke: #68A4FF;
+      --footer-bg: #0A0D12;
+      --footer-text: #4A6480;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--text2);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--text3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    .nav-cta {
+      background: var(--accent);
+      color: #fff !important;
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-size: 13px !important;
+      transition: opacity 0.2s !important;
+    }
+    .nav-cta:hover { opacity: 0.85; color: #fff !important; }
+
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      transition: all 0.2s;
+    }
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 100px 40px 60px;
+      background: var(--bg2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .hero-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.1s;
+    }
+
+    .hero-heading {
+      font-family: var(--mono);
+      font-size: clamp(52px, 9vw, 86px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      color: var(--text);
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.2s;
+    }
+
+    .hero-heading .rico-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .hero-heading .accent { color: var(--accent); }
+
+    /* Magnifying glass SVG */
+    .magnifier {
+      position: absolute;
+      top: -28px;
+      left: -18px;
+      width: 200px;
+      height: 200px;
+      pointer-events: none;
+      opacity: 0;
+      animation: fadeIn 0.8s ease forwards 0.9s;
+    }
+
+    .hero-sub {
+      margin-top: 28px;
+      font-size: 16px;
+      color: var(--text2);
+      font-weight: 300;
+      max-width: 500px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.5s;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      margin-top: 40px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.7s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 100px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+      padding: 14px 32px;
+      border-radius: 100px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .btn-outline:hover { background: var(--accent-soft); transform: translateY(-1px); }
+
+    /* ── SECTION BASE ── */
+    section {
+      padding: 100px 40px;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+
+    /* ── ABOUT ── */
+    .about {
+      background: var(--bg);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 80px;
+      align-items: start;
+      max-width: 1100px;
+    }
+
+    .about-text p {
+      font-size: 16px;
+      line-height: 1.85;
+      color: var(--text2);
+      margin-bottom: 20px;
+      font-weight: 300;
+    }
+
+    .about-text p strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .skills-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      margin-top: 36px;
+    }
+
+    .skills-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    /* ── PROJECTS ── */
+    .projects {
+      background: var(--bg2);
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      max-width: 1100px;
+    }
+
+    .project-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .project-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(33,118,255,0.08); }
+
+    .project-card.placeholder {
+      border-style: dashed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 220px;
+      opacity: 0.5;
+    }
+
+    .project-card.placeholder p {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text3);
+      text-align: center;
+    }
+
+    .project-tag {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 100px;
+      padding: 4px 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      margin-bottom: 20px;
+    }
+
+    .project-title {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .project-desc {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.7;
+      font-weight: 300;
+      margin-bottom: 24px;
+    }
+
+    .project-stack {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 0.5px;
+    }
+
+    /* ── CERTIFICATIONS ── */
+    .certifications {
+      background: var(--bg);
+    }
+
+    .certs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 700px;
+    }
+
+    .cert-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 24px 28px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      transition: transform 0.2s;
+    }
+    .cert-item:hover { transform: translateX(4px); }
+
+    .cert-status {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .cert-status.earned { background: #D6FFE8; }
+    .cert-status.upcoming { background: var(--accent-soft); border: 1.5px dashed var(--accent); }
+    .cert-status.planned { background: var(--bg3); border: 1.5px dashed var(--border); }
+
+    .cert-name {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .cert-meta {
+      font-size: 13px;
+      color: var(--text3);
+      font-weight: 300;
+    }
+
+    .cert-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 4px 14px;
+      border-radius: 100px;
+    }
+    .cert-badge.earned { background: #D6FFE8; color: #1A7A3A; }
+    .cert-badge.upcoming { background: var(--accent-soft); color: var(--accent); }
+    .cert-badge.planned { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
+
+    /* ── CONTACT ── */
+    .contact {
+      background: var(--bg2);
+      text-align: center;
+    }
+
+    .contact h2 {
+      font-family: var(--mono);
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+      letter-spacing: -1px;
+    }
+
+    .contact p {
+      font-size: 16px;
+      color: var(--text2);
+      font-weight: 300;
+      margin-bottom: 40px;
+    }
+
+    .contact-links {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--footer-bg);
+      padding: 32px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    footer .logo {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--footer-text);
+    }
+    footer .logo span { color: var(--accent); }
+
+    footer p {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--footer-text);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">whereisrico<span>.dev</span></a>
+    <ul class="nav-links">
+      <li><a href="#about">about</a></li>
+      <li><a href="#projects">projects</a></li>
+      <li><a href="#certifications">certs</a></li>
+      <li><a href="#contact" class="nav-cta">contact</a></li>
+    </ul>
+    <button class="theme-toggle" onclick="toggleTheme()">[ dark ]</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <p class="hero-label">// nassau, bahamas · cloud engineer in the making</p>
+    <h1 class="hero-heading">
+      where<br>is<br>
+      <span class="rico-wrap">
+        <span class="accent">rico?</span>
+        <!-- Magnifying glass -->
+        <svg class="magnifier" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="88" cy="88" r="62" fill="var(--lens-bg)" stroke="var(--lens-stroke)" stroke-width="8"/>
+          <circle cx="88" cy="88" r="62" fill="none" stroke="white" stroke-width="2" opacity="0.2"/>
+          <line x1="135" y1="135" x2="182" y2="182" stroke="var(--lens-stroke)" stroke-width="14" stroke-linecap="round"/>
+        </svg>
+      </span>
+    </h1>
+    <p class="hero-sub">
+      Aspiring cloud engineer building on AWS, grinding certifications, and making the jump from airline gates to cloud infrastructure. Based in Nassau, Bahamas.
+    </p>
+    <div class="hero-actions">
+      <a href="#projects" class="btn-primary">view projects</a>
+      <a href="#contact" class="btn-outline">say hello →</a>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <p class="section-label reveal">// about me</p>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p>
+          I'm Rico — an <strong>aspiring cloud engineer</strong> based in Nassau, Bahamas. I'm currently pursuing a <strong>Bachelor of Science in Computer Science</strong> at the University of London, with a clear goal: breaking into cloud infrastructure as a cloud engineer, DevOps practitioner, or solutions architect.
+        </p>
+        <p>
+          By day I work at Delta Air Lines managing gate operations — a role that's sharpened my ability to stay calm under pressure, adapt fast, and execute with precision. Those same instincts are what I bring to tech.
+        </p>
+        <p>
+          I build real things on AWS, document everything I learn, and treat every project as a step closer to where I'm going. This site is one of them — fully deployed on AWS using S3, CloudFront, Route 53, ACM, Lambda, and API Gateway.
+        </p>
+
+        <p class="skills-title">// skills</p>
+        <div class="skills-pills">
+          <span class="pill">AWS</span>
+          <span class="pill">Python</span>
+          <span class="pill">JavaScript</span>
+          <span class="pill">Linux</span>
+          <span class="pill">Git</span>
+          <span class="pill">Networking</span>
+          <span class="pill">DNS</span>
+          <span class="pill">TCP/IP</span>
+          <span class="pill">HTML/CSS</span>
+        </div>
+      </div>
+
+      <div class="reveal" style="padding-top: 8px;">
+        <div style="font-family: var(--mono); font-size: 13px; color: var(--text3); line-height: 2.2;">
+          <div style="color: var(--accent);">$ whoami</div>
+          <div style="color: var(--text2);">rico roberts</div>
+          <br>
+          <div style="color: var(--accent);">$ cat goal.txt</div>
+          <div style="color: var(--text2);">cloud engineering /</div>
+          <div style="color: var(--text2);">devops / sre /</div>
+          <div style="color: var(--text2);">solutions architecture</div>
+          <br>
+          <div style="color: var(--accent);">$ echo $LOCATION</div>
+          <div style="color: var(--text2);">nassau, bahamas 🌊</div>
+          <br>
+          <div style="color: var(--accent);">$ uptime</div>
+          <div style="color: var(--text2);">grinding 24/7</div>
+          <span style="animation: blink 1s step-end infinite; color: var(--accent);">▋</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section class="projects" id="projects">
+    <p class="section-label reveal">// projects</p>
+    <div class="projects-grid">
+      <div class="project-card reveal">
+        <span class="project-tag">in progress</span>
+        <p class="project-title">whereisrico.dev</p>
+        <p class="project-desc">
+          Personal portfolio site fully deployed on AWS. Configured S3 for static hosting, CloudFront for CDN and HTTPS delivery, Route 53 for DNS, ACM for SSL, and Lambda + API Gateway for the serverless contact form.
+        </p>
+        <p class="project-stack">S3 · CloudFront · Route 53 · ACM · Lambda · API Gateway · SES</p>
+      </div>
+      <div class="project-card placeholder reveal">
+        <p>next project<br>coming soon...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CERTIFICATIONS -->
+  <section class="certifications" id="certifications">
+    <p class="section-label reveal">// certifications</p>
+    <div class="certs-list">
+
+      <div class="cert-item reveal">
+        <div class="cert-status earned">✓</div>
+        <div>
+          <p class="cert-name">CompTIA Network+</p>
+          <p class="cert-meta">Networking fundamentals, TCP/IP, DNS, routing & switching</p>
+        </div>
+        <span class="cert-badge earned">earned</span>
+      </div>
+
+      <div class="cert-item reveal">
+        <div class="cert-status upcoming">→</div>
+        <div>
+          <p class="cert-name">CompTIA Security+</p>
+          <p class="cert-meta">Security concepts, threat management, cryptography</p>
+        </div>
+        <span class="cert-badge upcoming">upcoming</span>
+      </div>
+
+      <div class="cert-item reveal">
+        <div class="cert-status planned">◦</div>
+        <div>
+          <p class="cert-name">AWS Solutions Architect Associate</p>
+          <p class="cert-meta">Designing resilient, cost-optimized AWS architectures</p>
+        </div>
+        <span class="cert-badge planned">planned</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact">
+    <h2 class="reveal">let's connect.</h2>
+    <p class="reveal">I'm open to opportunities, collaborations, and conversations.</p>
+    <div class="contact-links reveal">
+      <a href="https://linkedin.com/in/tarico-roberts" class="btn-primary" target="_blank">LinkedIn</a>
+      <a href="mailto:rico@whereisrico.dev" class="btn-outline">rico@whereisrico.dev</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="logo">whereisrico<span>.dev</span></span>
+    <p>built on aws · s3 + cloudfront + route53</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const btn = document.querySelector('.theme-toggle');
+      if (html.dataset.theme === 'light') {
+        html.dataset.theme = 'dark';
+        btn.textContent = '[ light ]';
+      } else {
+        html.dataset.theme = 'light';
+        btn.textContent = '[ dark ]';
+      }
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
