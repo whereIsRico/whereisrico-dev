@@ -72,6 +72,7 @@
       height: 64px;
       background: var(--nav-bg);
       backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
     }
 
@@ -110,6 +111,12 @@
     }
     .nav-cta:hover { opacity: 0.85; color: #fff !important; }
 
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
     .theme-toggle {
       background: none;
       border: 1px solid var(--border);
@@ -122,6 +129,31 @@
       transition: all 0.2s;
     }
     .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+      width: 38px;
+      height: 38px;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 18px;
+      height: 2px;
+      background: var(--text2);
+      transition: all 0.25s ease;
+      border-radius: 2px;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
     /* ── HERO ── */
     .hero {
@@ -204,6 +236,7 @@
       margin-top: 40px;
       opacity: 0;
       animation: fadeUp 0.7s ease forwards 0.7s;
+      flex-wrap: wrap;
     }
 
     .btn-primary {
@@ -218,6 +251,8 @@
       cursor: pointer;
       text-decoration: none;
       transition: opacity 0.2s, transform 0.2s;
+      display: inline-block;
+      text-align: center;
     }
     .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
 
@@ -233,6 +268,8 @@
       cursor: pointer;
       text-decoration: none;
       transition: background 0.2s, transform 0.2s;
+      display: inline-block;
+      text-align: center;
     }
     .btn-outline:hover { background: var(--accent-soft); transform: translateY(-1px); }
 
@@ -432,10 +469,165 @@
       font-size: 11px;
       padding: 4px 14px;
       border-radius: 100px;
+      white-space: nowrap;
     }
     .cert-badge.earned { background: #D6FFE8; color: #1A7A3A; }
     .cert-badge.upcoming { background: var(--accent-soft); color: var(--accent); }
     .cert-badge.planned { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
+
+    /* ── RESUME ── */
+    .resume {
+      background: var(--bg3);
+    }
+
+    .resume-download {
+      margin-bottom: 48px;
+    }
+
+    .resume-grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 64px;
+      max-width: 1100px;
+      align-items: start;
+    }
+
+    .resume-block {
+      margin-bottom: 48px;
+    }
+    .resume-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .resume-block-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .resume-entry {
+      padding-left: 20px;
+      border-left: 2px solid var(--border);
+      margin-bottom: 36px;
+      transition: border-color 0.2s;
+    }
+    .resume-entry:last-child { margin-bottom: 0; }
+    .resume-entry:hover { border-left-color: var(--accent); }
+
+    .resume-entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .resume-entry-role {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .resume-entry-date {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 3px 10px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .resume-entry-org {
+      display: block;
+      font-size: 13px;
+      color: var(--text3);
+      margin-bottom: 14px;
+    }
+
+    .resume-entry-details {
+      list-style: none;
+      padding: 0;
+    }
+    .resume-entry-details li {
+      font-size: 14px;
+      color: var(--text2);
+      font-weight: 300;
+      line-height: 1.8;
+      margin-bottom: 6px;
+      padding-left: 16px;
+      position: relative;
+    }
+    .resume-entry-details li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .resume-entry-note {
+      font-size: 14px;
+      color: var(--text2);
+      font-weight: 300;
+      line-height: 1.8;
+    }
+
+    .resume-skill-group {
+      margin-bottom: 20px;
+    }
+    .resume-skill-group:last-child { margin-bottom: 0; }
+
+    .resume-skill-group-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .resume-cert-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .resume-cert {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .resume-cert-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .resume-cert-dot.earned { background: #D6FFE8; color: #1A7A3A; }
+    .resume-cert-dot.upcoming { background: var(--accent-soft); border: 1.5px dashed var(--accent); color: var(--accent); }
+    .resume-cert-dot.planned { background: var(--bg2); border: 1.5px dashed var(--border); color: var(--text3); }
+    .resume-cert-name {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .resume-cert-status {
+      font-size: 12px;
+      color: var(--text3);
+    }
 
     /* ── CONTACT ── */
     .contact {
@@ -499,6 +691,11 @@
       to   { opacity: 1; }
     }
 
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
     /* ── SCROLL REVEAL ── */
     .reveal {
       opacity: 0;
@@ -509,6 +706,116 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      nav {
+        padding: 0 20px;
+      }
+
+      .nav-hamburger {
+        display: flex;
+      }
+
+      .nav-links {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background: var(--nav-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        flex-direction: column;
+        padding: 8px 24px 24px;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+        display: none;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      }
+
+      .nav-links.open {
+        display: flex;
+      }
+
+      .nav-links li {
+        width: 100%;
+      }
+
+      .nav-links a {
+        font-size: 15px;
+        display: block;
+        padding: 14px 4px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .nav-links li:last-child a {
+        border-bottom: none;
+        margin-top: 12px;
+        text-align: center;
+        border-radius: 100px;
+      }
+
+      .hero {
+        padding: 100px 20px 60px;
+      }
+
+      .hero-heading {
+        font-size: clamp(44px, 12vw, 72px);
+        letter-spacing: -1.5px;
+      }
+
+      .hero-sub {
+        font-size: 15px;
+      }
+
+      section {
+        padding: 72px 20px;
+      }
+
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .resume-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .cert-item {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 20px;
+      }
+
+      .cert-badge {
+        margin-left: 0;
+      }
+
+      footer {
+        padding: 24px 20px;
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .contact-links {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .contact-links .btn-primary,
+      .contact-links .btn-outline {
+        width: 100%;
+        max-width: 320px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -516,13 +823,19 @@
   <!-- NAV -->
   <nav>
     <a href="#" class="nav-logo">whereisrico<span>.dev</span></a>
-    <ul class="nav-links">
-      <li><a href="#about">about</a></li>
-      <li><a href="#projects">projects</a></li>
-      <li><a href="#certifications">certs</a></li>
-      <li><a href="#contact" class="nav-cta">contact</a></li>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#about" onclick="closeMenu()">about</a></li>
+      <li><a href="#projects" onclick="closeMenu()">projects</a></li>
+      <li><a href="#resume" onclick="closeMenu()">resume</a></li>
+      <li><a href="#certifications" onclick="closeMenu()">certs</a></li>
+      <li><a href="#contact" class="nav-cta" onclick="closeMenu()">contact</a></li>
     </ul>
-    <button class="theme-toggle" onclick="toggleTheme()">[ dark ]</button>
+    <div class="nav-right">
+      <button class="theme-toggle" onclick="toggleTheme()">[ dark ]</button>
+      <button class="nav-hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </nav>
 
   <!-- HERO -->
@@ -626,7 +939,7 @@
         <div class="cert-status earned">✓</div>
         <div>
           <p class="cert-name">CompTIA Network+</p>
-          <p class="cert-meta">Networking fundamentals, TCP/IP, DNS, routing & switching</p>
+          <p class="cert-meta">Networking fundamentals, TCP/IP, DNS, routing &amp; switching</p>
         </div>
         <span class="cert-badge earned">earned</span>
       </div>
@@ -649,6 +962,148 @@
         <span class="cert-badge planned">planned</span>
       </div>
 
+    </div>
+  </section>
+
+  <!-- RESUME -->
+  <!-- Upload rico-roberts-resume.pdf to your S3 bucket for the download button to work -->
+  <section class="resume" id="resume">
+    <p class="section-label reveal">// resume</p>
+    <div class="resume-download reveal">
+      <a href="rico-roberts-resume.pdf" download class="btn-primary">↓ download pdf</a>
+    </div>
+    <div class="resume-grid">
+
+      <!-- Main column: experience + education -->
+      <div class="resume-main">
+
+        <div class="resume-block reveal">
+          <h3 class="resume-block-title">// experience</h3>
+          <div class="resume-entry">
+            <div class="resume-entry-header">
+              <span class="resume-entry-role">Customer Service Agent</span>
+              <span class="resume-entry-date">2019 – present</span>
+            </div>
+            <span class="resume-entry-org">Delta Air Lines · Nassau, Bahamas</span>
+            <ul class="resume-entry-details">
+              <li>Manage gate operations and time-critical passenger boarding logistics for domestic and international flights</li>
+              <li>Coordinate across flight crews, ground operations, and ramp teams under tight operational windows</li>
+              <li>Handle irregular operations — delays, cancellations, rebooking — with composure and efficiency</li>
+              <li>Developed precision execution, situational awareness, and calm decision-making under pressure</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="resume-block reveal">
+          <h3 class="resume-block-title">// education</h3>
+          <div class="resume-entry">
+            <div class="resume-entry-header">
+              <span class="resume-entry-role">BSc Computer Science</span>
+              <span class="resume-entry-date">2023 – present</span>
+            </div>
+            <span class="resume-entry-org">University of London · Remote</span>
+            <p class="resume-entry-note">Core modules include algorithms and data structures, discrete mathematics, object-oriented programming, and web development. Pursuing the degree in parallel with hands-on cloud engineering work, with a focus on cloud infrastructure, DevOps, and systems architecture.</p>
+          </div>
+        </div>
+
+        <div class="resume-block reveal">
+          <h3 class="resume-block-title">// projects</h3>
+          <div class="resume-entry">
+            <div class="resume-entry-header">
+              <span class="resume-entry-role">whereisrico.dev</span>
+              <span class="resume-entry-date">2025 – present</span>
+            </div>
+            <span class="resume-entry-org">Personal Portfolio · AWS</span>
+            <ul class="resume-entry-details">
+              <li>Architected and deployed a static site using S3, CloudFront, Route 53, and ACM</li>
+              <li>Built a serverless contact form backend using Lambda, API Gateway, and SES</li>
+              <li>Configured custom domain, HTTPS, and CDN caching end-to-end without a framework</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar: skills + certifications -->
+      <div class="resume-sidebar">
+
+        <div class="resume-block reveal">
+          <h3 class="resume-block-title">// skills</h3>
+          <div class="resume-skill-group">
+            <p class="resume-skill-group-label">cloud &amp; infrastructure</p>
+            <div class="skills-pills">
+              <span class="pill">AWS</span>
+              <span class="pill">S3</span>
+              <span class="pill">CloudFront</span>
+              <span class="pill">Lambda</span>
+              <span class="pill">Route 53</span>
+              <span class="pill">ACM</span>
+              <span class="pill">API Gateway</span>
+            </div>
+          </div>
+          <div class="resume-skill-group" style="margin-top: 16px;">
+            <p class="resume-skill-group-label">languages &amp; tools</p>
+            <div class="skills-pills">
+              <span class="pill">Python</span>
+              <span class="pill">JavaScript</span>
+              <span class="pill">HTML/CSS</span>
+              <span class="pill">Git</span>
+              <span class="pill">Linux</span>
+            </div>
+          </div>
+          <div class="resume-skill-group" style="margin-top: 16px;">
+            <p class="resume-skill-group-label">networking</p>
+            <div class="skills-pills">
+              <span class="pill">TCP/IP</span>
+              <span class="pill">DNS</span>
+              <span class="pill">Routing</span>
+              <span class="pill">Switching</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="resume-block reveal">
+          <h3 class="resume-block-title">// certifications</h3>
+          <div class="resume-cert-list">
+            <div class="resume-cert">
+              <span class="resume-cert-dot earned">✓</span>
+              <div>
+                <p class="resume-cert-name">CompTIA Network+</p>
+                <p class="resume-cert-status">Earned</p>
+              </div>
+            </div>
+            <div class="resume-cert">
+              <span class="resume-cert-dot upcoming">→</span>
+              <div>
+                <p class="resume-cert-name">CompTIA Security+</p>
+                <p class="resume-cert-status">In Progress</p>
+              </div>
+            </div>
+            <div class="resume-cert">
+              <span class="resume-cert-dot planned">◦</span>
+              <div>
+                <p class="resume-cert-name">AWS Solutions Architect</p>
+                <p class="resume-cert-status">Planned</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="resume-block reveal">
+          <h3 class="resume-block-title">// contact</h3>
+          <div style="font-family: var(--mono); font-size: 13px; color: var(--text2); line-height: 2.2;">
+            <div><span style="color: var(--text3);">email</span></div>
+            <div>rico@whereisrico.dev</div>
+            <br>
+            <div><span style="color: var(--text3);">linkedin</span></div>
+            <div>in/tarico-roberts</div>
+            <br>
+            <div><span style="color: var(--text3);">location</span></div>
+            <div>nassau, bahamas</div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </section>
 
@@ -680,6 +1135,28 @@
         btn.textContent = '[ dark ]';
       }
     }
+
+    function toggleMenu() {
+      const nav = document.getElementById('navLinks');
+      const hamburger = document.getElementById('hamburger');
+      nav.classList.toggle('open');
+      hamburger.classList.toggle('open');
+    }
+
+    function closeMenu() {
+      const nav = document.getElementById('navLinks');
+      const hamburger = document.getElementById('hamburger');
+      nav.classList.remove('open');
+      hamburger.classList.remove('open');
+    }
+
+    document.addEventListener('click', function(e) {
+      const nav = document.getElementById('navLinks');
+      const hamburger = document.getElementById('hamburger');
+      if (nav.classList.contains('open') && !nav.contains(e.target) && !hamburger.contains(e.target)) {
+        closeMenu();
+      }
+    });
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry, i) => {
