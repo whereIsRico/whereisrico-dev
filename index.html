@@ -27,6 +27,11 @@
       --lens-stroke: #2176FF;
       --footer-bg: #0C2340;
       --footer-text: #7A97B0;
+      --globe-bg-inner: #C0D8F5;
+      --globe-bg-outer: #8BB4E0;
+      --globe-grid: rgba(33,118,255,0.22);
+      --globe-land: #6FA0CC;
+      --terminal-bg: #071120;
     }
 
     [data-theme="dark"] {
@@ -46,6 +51,11 @@
       --lens-stroke: #68A4FF;
       --footer-bg: #0A0D12;
       --footer-text: #4A6480;
+      --globe-bg-inner: #1B2D4A;
+      --globe-bg-outer: #0C1624;
+      --globe-grid: rgba(104,164,255,0.18);
+      --globe-land: #1E3355;
+      --terminal-bg: #080C12;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -159,12 +169,114 @@
     .hero {
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
+      align-items: center;
       justify-content: center;
       padding: 100px 40px 60px;
       background: var(--bg2);
       position: relative;
       overflow: hidden;
+    }
+
+    .hero-inner {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 72px;
+      max-width: 1180px;
+      width: 100%;
+    }
+
+    .hero-left {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero-right {
+      flex: 0 0 310px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      opacity: 0;
+      animation: fadeIn 0.8s ease forwards 1.1s;
+    }
+
+    /* Globe */
+    .globe-wrap {
+      width: 100%;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px var(--border), 0 0 48px rgba(104,164,255,0.07);
+    }
+
+    .globe-wrap svg { width: 100%; height: auto; display: block; }
+
+    .globe-grid-line { fill: none; stroke: var(--globe-grid); stroke-width: 0.55; }
+    .globe-grid-line.equator { stroke-width: 0.85; }
+    .globe-land-path { fill: var(--globe-land); stroke: none; }
+    .globe-dot { fill: var(--accent); }
+    .globe-label { font-family: 'Space Mono', monospace; font-size: 10px; fill: var(--accent); font-weight: 700; }
+
+    .globe-ring {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 1.5;
+      animation: globePulse 2s ease-out infinite;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    @keyframes globePulse {
+      0%   { opacity: 0.7; transform: scale(1); }
+      100% { opacity: 0;   transform: scale(5); }
+    }
+
+    /* Terminal */
+    .hero-terminal {
+      background: var(--terminal-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      font-family: var(--mono);
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.035);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .terminal-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .terminal-dot.red    { background: #FF5F57; }
+    .terminal-dot.yellow { background: #FEBC2E; }
+    .terminal-dot.green  { background: #28C840; }
+
+    .terminal-title { font-size: 10px; color: var(--text3); margin: 0 auto; letter-spacing: 0.3px; }
+
+    .terminal-body {
+      padding: 12px 14px 14px;
+      font-size: 11px;
+      line-height: 1.85;
+      min-height: 152px;
+      overflow: hidden;
+    }
+
+    .term-line   { color: var(--text3); }
+    .term-prompt { color: var(--accent2); }
+    .term-input  { color: var(--text); }
+    .term-output { color: var(--text2); }
+
+    .term-cursor {
+      display: inline-block;
+      width: 6px;
+      height: 12px;
+      background: var(--accent);
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+      border-radius: 1px;
     }
 
     .hero::before {
@@ -757,6 +869,20 @@
 
       .hero {
         padding: 100px 20px 60px;
+        align-items: flex-start;
+        justify-content: flex-start;
+      }
+
+      .hero-inner {
+        flex-direction: column;
+        gap: 48px;
+      }
+
+      .hero-right {
+        flex: none;
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto;
       }
 
       .hero-heading {
@@ -800,6 +926,11 @@
       }
     }
 
+    @media (min-width: 769px) and (max-width: 960px) {
+      .hero-inner { gap: 36px; }
+      .hero-right { flex: 0 0 250px; }
+    }
+
     @media (max-width: 480px) {
       .hero-actions {
         flex-direction: column;
@@ -840,25 +971,62 @@
 
   <!-- HERO -->
   <section class="hero">
-    <p class="hero-label">// nassau, bahamas · cloud engineer in the making</p>
-    <h1 class="hero-heading">
-      where<br>is<br>
-      <span class="rico-wrap">
-        <span class="accent">rico?</span>
-        <!-- Magnifying glass -->
-        <svg class="magnifier" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="88" cy="88" r="62" fill="var(--lens-bg)" stroke="var(--lens-stroke)" stroke-width="8"/>
-          <circle cx="88" cy="88" r="62" fill="none" stroke="white" stroke-width="2" opacity="0.2"/>
-          <line x1="135" y1="135" x2="182" y2="182" stroke="var(--lens-stroke)" stroke-width="14" stroke-linecap="round"/>
-        </svg>
-      </span>
-    </h1>
-    <p class="hero-sub">
-      Aspiring cloud engineer building on AWS, grinding certifications, and making the jump from airline gates to cloud infrastructure. Based in Nassau, Bahamas.
-    </p>
-    <div class="hero-actions">
-      <a href="#projects" class="btn-primary">view projects</a>
-      <a href="#contact" class="btn-outline">say hello →</a>
+    <div class="hero-inner">
+
+      <!-- Left: existing text -->
+      <div class="hero-left">
+        <p class="hero-label">// nassau, bahamas · cloud engineer in the making</p>
+        <h1 class="hero-heading">
+          where<br>is<br>
+          <span class="rico-wrap">
+            <span class="accent">rico?</span>
+            <svg class="magnifier" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="88" cy="88" r="62" fill="var(--lens-bg)" stroke="var(--lens-stroke)" stroke-width="8"/>
+              <circle cx="88" cy="88" r="62" fill="none" stroke="white" stroke-width="2" opacity="0.2"/>
+              <line x1="135" y1="135" x2="182" y2="182" stroke="var(--lens-stroke)" stroke-width="14" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </h1>
+        <p class="hero-sub">
+          Aspiring cloud engineer building on AWS, grinding certifications, and making the jump from airline gates to cloud infrastructure. Based in Nassau, Bahamas.
+        </p>
+        <div class="hero-actions">
+          <a href="#projects" class="btn-primary">view projects</a>
+          <a href="#contact" class="btn-outline">say hello →</a>
+        </div>
+      </div>
+
+      <!-- Right: globe + terminal -->
+      <div class="hero-right">
+        <div class="globe-wrap">
+          <svg id="heroGlobe" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Globe with Nassau, Bahamas highlighted">
+            <defs>
+              <radialGradient id="globeGrad" cx="38%" cy="32%" r="68%">
+                <stop offset="0%" style="stop-color:var(--globe-bg-inner)"/>
+                <stop offset="100%" style="stop-color:var(--globe-bg-outer)"/>
+              </radialGradient>
+              <clipPath id="globeClip">
+                <circle cx="150" cy="150" r="120"/>
+              </clipPath>
+            </defs>
+            <circle cx="150" cy="150" r="120" fill="url(#globeGrad)"/>
+            <g id="globeContent" clip-path="url(#globeClip)"></g>
+            <g id="globePin"></g>
+            <circle cx="150" cy="150" r="120" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity="0.15"/>
+          </svg>
+        </div>
+
+        <div class="hero-terminal">
+          <div class="terminal-bar">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span class="terminal-title">rico@whereisrico.dev: ~</span>
+          </div>
+          <div class="terminal-body" id="terminalBody"></div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -1167,6 +1335,197 @@
     }, { threshold: 0.1 });
 
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    /* ── GLOBE ── */
+    function buildGlobe() {
+      const ns = 'http://www.w3.org/2000/svg';
+      const cx = 150, cy = 150, r = 120;
+      const P0 = 20 * Math.PI / 180;
+      const L0 = -65 * Math.PI / 180;
+
+      function proj(lat, lon) {
+        const p = lat * Math.PI / 180;
+        const l = lon * Math.PI / 180;
+        const dl = l - L0;
+        const z = Math.sin(P0)*Math.sin(p) + Math.cos(P0)*Math.cos(p)*Math.cos(dl);
+        if (z < 0) return null;
+        return [
+          cx + r * Math.cos(p) * Math.sin(dl),
+          cy - r * (Math.cos(P0)*Math.sin(p) - Math.sin(P0)*Math.cos(p)*Math.cos(dl))
+        ];
+      }
+
+      function pts2d(pts) {
+        let d = '', m = true;
+        for (const pt of pts) {
+          if (!pt) { m = true; continue; }
+          d += (m ? 'M' : 'L') + pt[0].toFixed(1) + ',' + pt[1].toFixed(1);
+          m = false;
+        }
+        return d;
+      }
+
+      const content = document.getElementById('globeContent');
+      const pin = document.getElementById('globePin');
+      if (!content || !pin) return;
+
+      // Simplified land polygons visible in this Atlantic-centred view
+      const lands = [
+        // SE USA + Florida
+        [[30.5,-84],[31,-81.5],[32,-80.9],[32.8,-79.9],[33.8,-78.6],[34.7,-77.3],
+         [35.3,-75.5],[36,-75.8],[36.9,-76.1],[38.3,-75.1],[39,-74.8],[40.2,-74],
+         [40.7,-73.8],[41.3,-72],[41.7,-71],[42,-70.5],[42,-70.1],[41,-70.3],
+         [40,-73.8],[38.8,-74.9],[38,-75.2],[37.2,-76],[36.5,-76.2],[35.5,-75.5],
+         [35,-77.1],[34,-78.5],[33,-79.2],[32,-80.9],[31,-81.3],[30,-81],
+         [29.6,-81.3],[29.2,-81],[28.8,-80.7],[27.5,-80.4],[26,-80.1],
+         [25.2,-80.4],[24.8,-81.2],[24.6,-81.8],[24.7,-82.5],[25.2,-84],
+         [28,-84.5],[29.5,-85],[30,-85.5],[30.5,-84]],
+        // Cuba
+        [[22.4,-84.9],[22.5,-83],[22.3,-81],[22.5,-79.6],[22.9,-77.7],
+         [23.1,-75.9],[22.6,-74.5],[20.2,-74.5],[19.8,-77.8],[20.4,-78.5],
+         [22,-84.4],[22.4,-84.9]],
+        // Jamaica (3× enlarged for visibility)
+        [[19.3,-81.1],[16.9,-77.8],[17.5,-74.2],[19.0,-74.8],[19.3,-81.1]],
+        // Hispaniola (2× enlarged)
+        [[20.7,-75.1],[20.5,-71.1],[18.1,-70.5],[17.3,-72.1],[17.9,-74.7],[19.9,-74.1],[20.7,-75.1]],
+        // Puerto Rico (4× enlarged for visibility)
+        [[19.3,-70.3],[16.9,-66.3],[17.3,-63.9],[19.3,-64.3],[19.3,-70.3]],
+        // N Venezuela / Colombia coast
+        [[12,-72],[11.8,-70.3],[11,-63.8],[10.6,-63.2],[10,-61.5],[10,-61],
+         [10.5,-61],[11,-62],[11.5,-63.5],[12,-65],[11.8,-67],[12,-70],[12,-72]],
+        // New Providence / Nassau (7× enlarged for emphasis)
+        [[25.4,-79.3],[24.3,-76.5],[24.7,-75.8],[25.8,-77.6],[25.4,-79.3]],
+      ];
+
+      for (const poly of lands) {
+        const pts = poly.map(([la,lo]) => proj(la,lo));
+        const d = pts2d(pts);
+        if (!d) continue;
+        const path = document.createElementNS(ns, 'path');
+        path.setAttribute('d', d + 'Z');
+        path.setAttribute('class', 'globe-land-path');
+        content.appendChild(path);
+      }
+
+      // Latitude grid lines
+      for (const lat of [-60,-30,0,30,60]) {
+        const pts = [];
+        for (let lon = -180; lon <= 180; lon += 3) pts.push(proj(lat, lon));
+        const d = pts2d(pts);
+        if (!d) continue;
+        const path = document.createElementNS(ns, 'path');
+        path.setAttribute('d', d);
+        path.setAttribute('class', 'globe-grid-line' + (lat === 0 ? ' equator' : ''));
+        content.appendChild(path);
+      }
+
+      // Longitude grid lines
+      for (const lon of [-150,-120,-90,-60,-30,0,30]) {
+        const pts = [];
+        for (let lat = -90; lat <= 90; lat += 3) pts.push(proj(lat, lon));
+        const d = pts2d(pts);
+        if (!d) continue;
+        const path = document.createElementNS(ns, 'path');
+        path.setAttribute('d', d);
+        path.setAttribute('class', 'globe-grid-line');
+        content.appendChild(path);
+      }
+
+      // Nassau pin
+      const nassau = proj(25.04, -77.35);
+      if (nassau) {
+        const g = document.createElementNS(ns, 'g');
+        g.setAttribute('transform', `translate(${nassau[0].toFixed(1)},${nassau[1].toFixed(1)})`);
+        for (let i = 0; i < 3; i++) {
+          const ring = document.createElementNS(ns, 'circle');
+          ring.setAttribute('cx', '0'); ring.setAttribute('cy', '0'); ring.setAttribute('r', '4');
+          ring.setAttribute('class', 'globe-ring');
+          ring.style.animationDelay = i * 0.65 + 's';
+          g.appendChild(ring);
+        }
+        const dot = document.createElementNS(ns, 'circle');
+        dot.setAttribute('cx', '0'); dot.setAttribute('cy', '0'); dot.setAttribute('r', '5');
+        dot.setAttribute('class', 'globe-dot');
+        g.appendChild(dot);
+        const lbl = document.createElementNS(ns, 'text');
+        lbl.setAttribute('x', '9'); lbl.setAttribute('y', '5');
+        lbl.setAttribute('class', 'globe-label');
+        lbl.textContent = 'Nassau';
+        g.appendChild(lbl);
+        pin.appendChild(g);
+      }
+    }
+
+    /* ── TERMINAL ── */
+    (function () {
+      const cmds = [
+        { i: 'whoami',               o: ['rico roberts'] },
+        { i: 'echo $LOCATION',       o: ['Nassau, Bahamas'] },
+        { i: 'ping whereisrico.dev', o: ['PING whereisrico.dev', '64 bytes: time=11ms ✓', '64 bytes: time=12ms ✓'] },
+        { i: 'cat skills.txt',       o: ['aws · python · linux', 'networking · devops · git'] },
+        { i: 'echo $STATUS',         o: ['grinding 24/7'] },
+      ];
+      let ci = 0, ch = 0, phase = 'type', oi = 0;
+
+      function step() {
+        const body = document.getElementById('terminalBody');
+        if (!body) return;
+
+        if (phase === 'type') {
+          if (ch === 0) {
+            const div = document.createElement('div');
+            div.className = 'term-line';
+            div.innerHTML = '<span class="term-prompt">$ </span>'
+              + '<span class="term-input"></span>'
+              + '<span class="term-cursor"></span>';
+            body.appendChild(div);
+            trim(body);
+          }
+          body.lastChild.querySelector('.term-input').textContent = cmds[ci].i.slice(0, ch + 1);
+          ch++;
+          if (ch < cmds[ci].i.length) {
+            setTimeout(step, 70 + Math.random() * 40);
+          } else {
+            phase = 'out'; oi = 0;
+            setTimeout(step, 380);
+          }
+        } else if (phase === 'out') {
+          if (oi === 0) {
+            const cur = body.lastChild && body.lastChild.querySelector('.term-cursor');
+            if (cur) cur.remove();
+          }
+          if (oi < cmds[ci].o.length) {
+            const div = document.createElement('div');
+            div.className = 'term-output';
+            div.textContent = cmds[ci].o[oi];
+            body.appendChild(div);
+            trim(body);
+            oi++;
+            setTimeout(step, 160);
+          } else {
+            phase = 'pause';
+            setTimeout(step, 650);
+          }
+        } else {
+          ci = (ci + 1) % cmds.length;
+          ch = 0; phase = 'type';
+          if (ci === 0) {
+            setTimeout(function () { body.innerHTML = ''; setTimeout(step, 350); }, 1400);
+          } else {
+            step();
+          }
+        }
+      }
+
+      function trim(body) {
+        while (body.children.length > 9) body.removeChild(body.firstChild);
+      }
+
+      window.addEventListener('DOMContentLoaded', function () {
+        buildGlobe();
+        setTimeout(step, 1600);
+      });
+    }());
   </script>
 </body>
 </html>
