@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -235,8 +235,8 @@
 
     /* Terminal */
     .hero-terminal {
-      background: var(--terminal-bg);
-      border: 1px solid var(--border);
+      background: #071120;
+      border: 1px solid rgba(68, 100, 128, 0.25);
       border-radius: 12px;
       overflow: hidden;
       font-family: var(--mono);
@@ -266,19 +266,41 @@
       overflow: hidden;
     }
 
-    .term-line   { color: var(--text3); }
-    .term-prompt { color: var(--accent2); }
-    .term-input  { color: var(--text); }
-    .term-output { color: var(--text2); }
+    /* Terminal is always dark — colors are hardcoded and never respond to theme */
+    .hero-terminal {
+      background: #071120 !important;
+      border-color: rgba(68, 100, 128, 0.25) !important;
+    }
+
+    .hero-terminal .terminal-bar {
+      border-bottom-color: rgba(68, 100, 128, 0.25) !important;
+    }
+
+    .hero-terminal .terminal-title { color: #4A6480 !important; }
+
+    .term-line   { color: #4A6480; }
+    .term-prompt { color: #68A4FF; }
+    .term-input  { color: #E2EAF4; }
+    .term-output { color: #8AAAC8; }
 
     .term-cursor {
       display: inline-block;
       width: 6px;
       height: 12px;
-      background: var(--accent);
+      background: #68A4FF;
       vertical-align: middle;
       animation: blink 1s step-end infinite;
       border-radius: 1px;
+    }
+
+    /* Masks the magnifier stem behind hero text lines */
+    .text-mask {
+      background: var(--bg2);
+      padding: 0 5px;
+      position: relative;
+      z-index: 2;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
     }
 
     .hero::before {
@@ -964,7 +986,7 @@
       <li><a href="#contact" class="nav-cta" onclick="closeMenu()">contact</a></li>
     </ul>
     <div class="nav-right">
-      <button class="theme-toggle" onclick="toggleTheme()">[ dark ]</button>
+      <button class="theme-toggle" onclick="toggleTheme()">[ light ]</button>
       <button class="nav-hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">
         <span></span><span></span><span></span>
       </button>
@@ -977,7 +999,7 @@
 
       <!-- Left: existing text -->
       <div class="hero-left">
-        <p class="hero-label">// nassau, bahamas · cloud engineer in the making</p>
+        <p class="hero-label"><span class="text-mask">// nassau, bahamas · cloud engineer in the making</span></p>
         <h1 class="hero-heading">
           where<br>is<br>
           <span class="rico-wrap">
@@ -990,7 +1012,7 @@
           </span>
         </h1>
         <p class="hero-sub">
-          Aspiring cloud engineer building on AWS, grinding certifications, and making the jump from airline gates to cloud infrastructure. Based in Nassau, Bahamas.
+          <span class="text-mask">Aspiring cloud engineer building on AWS, grinding certifications, and making the jump from airline gates to cloud infrastructure. Based in Nassau, Bahamas.</span>
         </p>
         <div class="hero-actions">
           <a href="#projects" class="btn-primary">view projects</a>
