@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VPC + Bastion Host — whereisrico.dev</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    :root {
+      --bg: #F4F8FD;
+      --bg2: #FFFFFF;
+      --bg3: #EAF3FC;
+      --nav-bg: rgba(255,255,255,0.85);
+      --text: #0C2340;
+      --text2: #3A5A7A;
+      --text3: #7A97B0;
+      --accent: #2176FF;
+      --accent2: #68A4FF;
+      --accent-soft: #D6E8FF;
+      --border: rgba(33, 118, 255, 0.15);
+      --card: #FFFFFF;
+      --mono: 'Space Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --footer-bg: #0C2340;
+      --footer-text: #7A97B0;
+    }
+
+    [data-theme="dark"] {
+      --bg: #111418;
+      --bg2: #181C22;
+      --bg3: #1E2330;
+      --nav-bg: rgba(24, 28, 34, 0.9);
+      --text: #E2EAF4;
+      --text2: #8AAAC8;
+      --text3: #4A6480;
+      --accent: #68A4FF;
+      --accent2: #2176FF;
+      --accent-soft: #1A2A45;
+      --border: rgba(104, 164, 255, 0.15);
+      --card: #181C22;
+      --footer-bg: #0A0D12;
+      --footer-text: #4A6480;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--text2);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--text3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    .nav-cta {
+      background: var(--accent);
+      color: #fff !important;
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-size: 13px !important;
+      transition: opacity 0.2s !important;
+    }
+    .nav-cta:hover { opacity: 0.85; color: #fff !important; }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      transition: all 0.2s;
+    }
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+      width: 38px;
+      height: 38px;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 18px;
+      height: 2px;
+      background: var(--text2);
+      transition: all 0.25s ease;
+      border-radius: 2px;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ── PAGE HERO ── */
+    .page-hero {
+      padding: 120px 40px 80px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-hero-inner {
+      max-width: 900px;
+    }
+
+    .breadcrumb {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text3);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumb a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .breadcrumb a:hover { opacity: 0.75; }
+    .breadcrumb span { color: var(--text3); }
+
+    .project-tag {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 100px;
+      padding: 4px 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      margin-bottom: 20px;
+    }
+
+    .page-title {
+      font-family: var(--mono);
+      font-size: clamp(32px, 6vw, 56px);
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .page-desc {
+      font-size: 17px;
+      color: var(--text2);
+      font-weight: 300;
+      line-height: 1.8;
+      max-width: 680px;
+      margin-bottom: 32px;
+    }
+
+    .stack-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    /* ── SECTIONS ── */
+    .content-section {
+      padding: 80px 40px;
+    }
+    .content-section:nth-child(even) { background: var(--bg2); }
+    .content-section:nth-child(odd)  { background: var(--bg); }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: var(--mono);
+      font-size: clamp(22px, 3.5vw, 32px);
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      margin-bottom: 48px;
+    }
+
+    .section-inner {
+      max-width: 900px;
+    }
+
+    /* ── DIAGRAM ── */
+    .diagram-wrap {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      overflow-x: auto;
+    }
+
+    .diagram-wrap svg {
+      display: block;
+      width: 100%;
+      max-width: 820px;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    /* SVG diagram tokens — respond to theme */
+    .d-vpc-fill    { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 6 4; opacity: 0.5; }
+    .d-subnet-pub  { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; opacity: 0.6; }
+    .d-subnet-priv { fill: var(--bg3); stroke: var(--text3); stroke-width: 1.5; opacity: 0.8; }
+    .d-box         { fill: var(--card); stroke: var(--border); stroke-width: 1.5; }
+    .d-box-accent  { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+    .d-igw         { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+    .d-arrow       { stroke: var(--accent); stroke-width: 1.5; fill: none; marker-end: url(#arr); }
+    .d-arrow-ssh   { stroke: #28C840; stroke-width: 1.5; fill: none; stroke-dasharray: 5 3; marker-end: url(#arr-green); }
+    .d-label       { font-family: 'Space Mono', monospace; fill: var(--text); font-size: 11px; font-weight: 700; }
+    .d-sublabel    { font-family: 'Space Mono', monospace; fill: var(--text3); font-size: 10px; }
+    .d-sublabel-acc{ font-family: 'Space Mono', monospace; fill: var(--accent); font-size: 10px; }
+    .d-region-label{ font-family: 'Space Mono', monospace; fill: var(--text3); font-size: 10px; letter-spacing: 1px; }
+    .d-green-label { font-family: 'Space Mono', monospace; fill: #28C840; font-size: 10px; }
+
+    /* ── STEPS ── */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 0 24px;
+      position: relative;
+    }
+
+    .step-number-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .step-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      border: 1.5px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    .step-line {
+      width: 2px;
+      flex: 1;
+      background: var(--border);
+      margin-top: 4px;
+      min-height: 32px;
+    }
+
+    .step:last-child .step-line { display: none; }
+
+    .step-body {
+      padding-bottom: 40px;
+    }
+
+    .step-title {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      padding-top: 8px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.8;
+      font-weight: 300;
+      margin-bottom: 14px;
+    }
+
+    .step-code {
+      background: #071120;
+      border: 1px solid rgba(68,100,128,0.25);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #8AAAC8;
+      line-height: 1.9;
+      overflow-x: auto;
+    }
+
+    .step-code .c-prompt { color: #68A4FF; }
+    .step-code .c-out    { color: #4A6480; }
+    .step-code .c-val    { color: #28C840; }
+
+    /* ── LEARNINGS ── */
+    .concepts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .concept-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .concept-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(33,118,255,0.08);
+    }
+
+    .concept-icon {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .concept-title {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .concept-desc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.75;
+      font-weight: 300;
+    }
+
+    .concept-badge {
+      display: inline-block;
+      margin-top: 12px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 100px;
+      padding: 3px 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    /* ── TAKEAWAYS ── */
+    .takeaways-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 720px;
+    }
+
+    .takeaway {
+      display: flex;
+      gap: 16px;
+      padding: 20px 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: border-color 0.2s;
+    }
+    .takeaway:hover { border-color: var(--accent); }
+
+    .takeaway-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .takeaway-text {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.8;
+      font-weight: 300;
+    }
+    .takeaway-text strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ── BACK LINK ── */
+    .back-section {
+      padding: 60px 40px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+      padding: 14px 32px;
+      border-radius: 100px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+      display: inline-block;
+    }
+    .btn-outline:hover { background: var(--accent-soft); transform: translateY(-1px); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--footer-bg);
+      padding: 32px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    footer .logo {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--footer-text);
+    }
+    footer .logo span { color: var(--accent); }
+    footer p {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--footer-text);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-hamburger { display: flex; }
+      .nav-links {
+        position: fixed;
+        top: 64px; left: 0; right: 0;
+        background: var(--nav-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        flex-direction: column;
+        padding: 8px 24px 24px;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+        display: none;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      }
+      .nav-links.open { display: flex; }
+      .nav-links li { width: 100%; }
+      .nav-links a {
+        font-size: 15px;
+        display: block;
+        padding: 14px 4px;
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-links li:last-child a {
+        border-bottom: none;
+        margin-top: 12px;
+        text-align: center;
+        border-radius: 100px;
+      }
+
+      .page-hero { padding: 100px 20px 60px; }
+      .content-section { padding: 60px 20px; }
+      .back-section { padding: 40px 20px; }
+      .step { grid-template-columns: 44px 1fr; gap: 0 16px; }
+
+      footer {
+        padding: 24px 20px;
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="nav-logo">whereisrico<span>.dev</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/#about" onclick="closeMenu()">about</a></li>
+      <li><a href="/#projects" onclick="closeMenu()">projects</a></li>
+      <li><a href="/#resume" onclick="closeMenu()">resume</a></li>
+      <li><a href="/#certifications" onclick="closeMenu()">certs</a></li>
+      <li><a href="/#contact" class="nav-cta" onclick="closeMenu()">contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="theme-toggle" onclick="toggleTheme()">[ light ]</button>
+      <button class="nav-hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <div class="page-hero-inner">
+      <div class="breadcrumb">
+        <a href="/#projects">← projects</a>
+        <span>/</span>
+        <span>vpc + bastion host</span>
+      </div>
+      <span class="project-tag">AWS · Networking</span>
+      <h1 class="page-title">VPC +<br>Bastion Host</h1>
+      <p class="page-desc">
+        Designed and deployed a custom AWS Virtual Private Cloud with public and private subnets across two availability zones, an Internet Gateway, route tables, and a hardened bastion host as the sole SSH entry point into the private network.
+      </p>
+      <div class="stack-row">
+        <span class="pill">VPC</span>
+        <span class="pill">EC2</span>
+        <span class="pill">Subnets</span>
+        <span class="pill">IGW</span>
+        <span class="pill">Route Tables</span>
+        <span class="pill">Security Groups</span>
+        <span class="pill">NACLs</span>
+        <span class="pill">SSH</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE DIAGRAM -->
+  <section class="content-section" id="diagram">
+    <div class="section-inner">
+      <p class="section-label reveal">// 01</p>
+      <h2 class="section-title reveal">Architecture Diagram</h2>
+      <div class="diagram-wrap reveal">
+        <svg viewBox="0 0 820 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="VPC and Bastion Host network topology diagram">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="var(--accent)" />
+            </marker>
+            <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#28C840" />
+            </marker>
+          </defs>
+
+          <!-- Region label -->
+          <text x="20" y="22" class="d-region-label">AWS REGION: us-east-1</text>
+
+          <!-- VPC outer boundary -->
+          <rect x="14" y="32" width="792" height="450" rx="14" class="d-vpc-fill" />
+          <text x="26" y="56" class="d-sublabel-acc">VPC — 10.0.0.0/16</text>
+
+          <!-- Public Subnet -->
+          <rect x="40" y="72" width="340" height="380" rx="10" class="d-subnet-pub" />
+          <text x="54" y="96" class="d-label">Public Subnet</text>
+          <text x="54" y="112" class="d-sublabel">10.0.1.0/24 · us-east-1a</text>
+
+          <!-- Private Subnet -->
+          <rect x="440" y="72" width="340" height="380" rx="10" class="d-subnet-priv" />
+          <text x="454" y="96" class="d-label">Private Subnet</text>
+          <text x="454" y="112" class="d-sublabel">10.0.2.0/24 · us-east-1b</text>
+
+          <!-- Internet Gateway -->
+          <rect x="92" y="128" width="160" height="60" rx="8" class="d-igw" />
+          <text x="172" y="154" text-anchor="middle" class="d-label">Internet Gateway</text>
+          <text x="172" y="170" text-anchor="middle" class="d-sublabel-acc">igw-xxxxxxxx</text>
+
+          <!-- Route Table (public) -->
+          <rect x="92" y="216" width="160" height="56" rx="8" class="d-box" />
+          <text x="172" y="239" text-anchor="middle" class="d-label">Route Table</text>
+          <text x="172" y="255" text-anchor="middle" class="d-sublabel">0.0.0.0/0 → IGW</text>
+
+          <!-- Bastion Host -->
+          <rect x="70" y="308" width="212" height="100" rx="10" class="d-box-accent" />
+          <text x="176" y="336" text-anchor="middle" class="d-label">Bastion Host</text>
+          <text x="176" y="354" text-anchor="middle" class="d-sublabel-acc">EC2 t2.micro</text>
+          <text x="176" y="370" text-anchor="middle" class="d-sublabel">Public IP · Amazon Linux 2</text>
+          <text x="176" y="388" text-anchor="middle" class="d-sublabel">SG: allow 22 from my IP</text>
+
+          <!-- Private EC2 -->
+          <rect x="490" y="190" width="232" height="100" rx="10" class="d-box" />
+          <text x="606" y="218" text-anchor="middle" class="d-label">Private EC2</text>
+          <text x="606" y="236" text-anchor="middle" class="d-sublabel">t2.micro · No public IP</text>
+          <text x="606" y="252" text-anchor="middle" class="d-sublabel">SG: allow 22 from</text>
+          <text x="606" y="268" text-anchor="middle" class="d-sublabel">bastion SG only</text>
+
+          <!-- Private Route Table -->
+          <rect x="490" y="316" width="232" height="56" rx="8" class="d-box" />
+          <text x="606" y="339" text-anchor="middle" class="d-label">Route Table</text>
+          <text x="606" y="355" text-anchor="middle" class="d-sublabel">local only — no IGW</text>
+
+          <!-- Internet (external) -->
+          <rect x="92" y="432" width="160" height="48" rx="8" class="d-box" />
+          <text x="172" y="452" text-anchor="middle" class="d-label">Internet</text>
+          <text x="172" y="468" text-anchor="middle" class="d-sublabel">Your local machine</text>
+
+          <!-- Arrows: internet → IGW -->
+          <line x1="172" y1="432" x2="172" y2="192" class="d-arrow" />
+
+          <!-- IGW → Route Table -->
+          <line x1="172" y1="216" x2="172" y2="188" class="d-arrow" />
+
+          <!-- Route Table → Bastion -->
+          <line x1="172" y1="272" x2="176" y2="308" class="d-arrow" />
+
+          <!-- SSH: Bastion → Private EC2 (green dashed) -->
+          <path d="M 282 355 Q 380 340 490 240" class="d-arrow-ssh" />
+          <text x="355" y="325" text-anchor="middle" class="d-green-label">SSH tunnel</text>
+          <text x="355" y="340" text-anchor="middle" class="d-green-label">port 22</text>
+
+          <!-- Security group callout lines -->
+          <line x1="440" y1="430" x2="606" y2="372" class="d-arrow" opacity="0.3" />
+          <text x="470" y="448" class="d-sublabel" text-anchor="middle">NACL boundary</text>
+        </svg>
+      </div>
+      <p style="margin-top:16px; font-family:var(--mono); font-size:11px; color:var(--text3);">
+        Traffic from the public internet enters via the Internet Gateway, hits the public subnet's route table, and reaches the bastion host. The private subnet has no route to the IGW — the only way in is SSH through the bastion.
+      </p>
+    </div>
+  </section>
+
+  <!-- WHAT WAS BUILT -->
+  <section class="content-section" id="steps">
+    <div class="section-inner">
+      <p class="section-label reveal">// 02</p>
+      <h2 class="section-title reveal">What Was Built</h2>
+      <div class="steps-list">
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">01</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">Create the VPC</p>
+            <p class="step-desc">
+              Created a custom VPC with CIDR block <code style="font-family:var(--mono);color:var(--accent);">10.0.0.0/16</code> — giving 65,536 IP addresses to carve up across subnets. DNS hostnames and DNS resolution were both enabled so EC2 instances receive resolvable hostnames automatically.
+            </p>
+            <div class="step-code">
+              <span class="c-prompt">$ </span>aws ec2 create-vpc --cidr-block 10.0.0.0/16 \<br>
+              &nbsp;&nbsp;--tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=my-vpc}]'<br>
+              <span class="c-out"># VpcId: </span><span class="c-val">vpc-0a1b2c3d4e5f</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">02</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">Create public and private subnets</p>
+            <p class="step-desc">
+              Created two subnets in separate availability zones for realistic multi-AZ awareness. The public subnet (<code style="font-family:var(--mono);color:var(--accent);">10.0.1.0/24</code>) hosts the bastion. The private subnet (<code style="font-family:var(--mono);color:var(--accent);">10.0.2.0/24</code>) hosts any resources that must not be directly internet-accessible.
+            </p>
+            <div class="step-code">
+              <span class="c-prompt">$ </span>aws ec2 create-subnet --vpc-id vpc-0a1b2c3d4e5f \<br>
+              &nbsp;&nbsp;--cidr-block 10.0.1.0/24 --availability-zone us-east-1a<br>
+              <span class="c-out"># public subnet → </span><span class="c-val">subnet-pub-xxxx</span><br><br>
+              <span class="c-prompt">$ </span>aws ec2 create-subnet --vpc-id vpc-0a1b2c3d4e5f \<br>
+              &nbsp;&nbsp;--cidr-block 10.0.2.0/24 --availability-zone us-east-1b<br>
+              <span class="c-out"># private subnet → </span><span class="c-val">subnet-priv-xxxx</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">03</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">Attach an Internet Gateway</p>
+            <p class="step-desc">
+              Created an Internet Gateway and attached it to the VPC. Without this, no traffic can leave or enter from the public internet — even a public subnet's EC2 instance would be unreachable.
+            </p>
+            <div class="step-code">
+              <span class="c-prompt">$ </span>aws ec2 create-internet-gateway<br>
+              <span class="c-out"># igw-id: </span><span class="c-val">igw-0f1e2d3c4b</span><br><br>
+              <span class="c-prompt">$ </span>aws ec2 attach-internet-gateway \<br>
+              &nbsp;&nbsp;--internet-gateway-id igw-0f1e2d3c4b \<br>
+              &nbsp;&nbsp;--vpc-id vpc-0a1b2c3d4e5f
+            </div>
+          </div>
+        </div>
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">04</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">Configure route tables</p>
+            <p class="step-desc">
+              Created a custom route table for the public subnet with a <code style="font-family:var(--mono);color:var(--accent);">0.0.0.0/0 → IGW</code> route, then associated it with the public subnet. The private subnet uses the VPC's default route table which only has the local route — no path to the internet.
+            </p>
+            <div class="step-code">
+              <span class="c-prompt">$ </span>aws ec2 create-route-table --vpc-id vpc-0a1b2c3d4e5f<br>
+              <span class="c-prompt">$ </span>aws ec2 create-route --route-table-id rtb-xxxx \<br>
+              &nbsp;&nbsp;--destination-cidr-block 0.0.0.0/0 \<br>
+              &nbsp;&nbsp;--gateway-id igw-0f1e2d3c4b<br>
+              <span class="c-prompt">$ </span>aws ec2 associate-route-table \<br>
+              &nbsp;&nbsp;--subnet-id subnet-pub-xxxx --route-table-id rtb-xxxx
+            </div>
+          </div>
+        </div>
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">05</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">Configure Security Groups</p>
+            <p class="step-desc">
+              Created two security groups. The bastion SG allows inbound SSH (port 22) only from my specific IP. The private instance SG allows inbound SSH only from the bastion's security group ID — not a CIDR, an SG reference — so even if the bastion's IP changes, the rule remains correct.
+            </p>
+            <div class="step-code">
+              <span class="c-out"># Bastion SG</span><br>
+              <span class="c-prompt">$ </span>aws ec2 authorize-security-group-ingress \<br>
+              &nbsp;&nbsp;--group-id sg-bastion --protocol tcp --port 22 \<br>
+              &nbsp;&nbsp;--cidr &lt;MY_IP&gt;/32<br><br>
+              <span class="c-out"># Private SG — source is the bastion SG, not a CIDR</span><br>
+              <span class="c-prompt">$ </span>aws ec2 authorize-security-group-ingress \<br>
+              &nbsp;&nbsp;--group-id sg-private --protocol tcp --port 22 \<br>
+              &nbsp;&nbsp;--source-group sg-bastion
+            </div>
+          </div>
+        </div>
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">06</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">Launch EC2 instances</p>
+            <p class="step-desc">
+              Launched the bastion host in the public subnet with a public IP assigned, Amazon Linux 2, and the bastion SG. Launched the private instance in the private subnet with no public IP — only the bastion can reach it.
+            </p>
+            <div class="step-code">
+              <span class="c-out"># Bastion — public subnet, gets public IP</span><br>
+              <span class="c-prompt">$ </span>aws ec2 run-instances --image-id ami-xxxxxxxx \<br>
+              &nbsp;&nbsp;--instance-type t2.micro --subnet-id subnet-pub-xxxx \<br>
+              &nbsp;&nbsp;--associate-public-ip-address \<br>
+              &nbsp;&nbsp;--security-group-ids sg-bastion --key-name my-key<br><br>
+              <span class="c-out"># Private instance — no public IP</span><br>
+              <span class="c-prompt">$ </span>aws ec2 run-instances --image-id ami-xxxxxxxx \<br>
+              &nbsp;&nbsp;--instance-type t2.micro --subnet-id subnet-priv-xxxx \<br>
+              &nbsp;&nbsp;--no-associate-public-ip-address \<br>
+              &nbsp;&nbsp;--security-group-ids sg-private --key-name my-key
+            </div>
+          </div>
+        </div>
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">07</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">SSH through the bastion</p>
+            <p class="step-desc">
+              Used SSH agent forwarding to hop from the local machine into the bastion, then from the bastion into the private instance — without copying the private key onto the bastion. This is the correct, secure pattern.
+            </p>
+            <div class="step-code">
+              <span class="c-out"># Add key to agent, then SSH with forwarding</span><br>
+              <span class="c-prompt">$ </span>ssh-add ~/.ssh/my-key.pem<br>
+              <span class="c-prompt">$ </span>ssh -A -J ec2-user@&lt;BASTION_IP&gt; ec2-user@10.0.2.x<br>
+              <span class="c-out"># -A forwards the agent; -J is ProxyJump</span><br>
+              <span class="c-val"># Connected to private EC2 — no public IP, no direct route</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT I LEARNED -->
+  <section class="content-section" id="learnings">
+    <div class="section-inner">
+      <p class="section-label reveal">// 03</p>
+      <h2 class="section-title reveal">What I Learned &amp; SAA-C03 Concepts</h2>
+
+      <div class="concepts-grid">
+
+        <div class="concept-card reveal">
+          <p class="concept-title">VPC Design &amp; CIDR Planning</p>
+          <p class="concept-desc">
+            A VPC is your own isolated slice of the AWS network. Choosing a CIDR like <code style="font-family:var(--mono);color:var(--accent);">/16</code> at the VPC level gives you flexibility to carve out many subnets without running out of IPs — important to get right before deploying anything.
+          </p>
+          <span class="concept-badge">SAA-C03: Design Secure Architectures</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">Internet Gateway vs NAT Gateway</p>
+          <p class="concept-desc">
+            An IGW enables bi-directional internet access for public subnets. A NAT Gateway allows private subnet instances to initiate outbound internet traffic (e.g. for updates) without exposing them to inbound connections. This project uses an IGW; adding a NAT Gateway is the next step.
+          </p>
+          <span class="concept-badge">SAA-C03: Design Resilient Architectures</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">Route Tables</p>
+          <p class="concept-desc">
+            Every subnet is associated with exactly one route table. The public subnet's table routes <code style="font-family:var(--mono);color:var(--accent);">0.0.0.0/0</code> to the IGW. The private subnet's table has only a local route — traffic stays inside the VPC. This is what makes a subnet "public" or "private."
+          </p>
+          <span class="concept-badge">SAA-C03: Design Secure Architectures</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">Security Groups vs NACLs</p>
+          <p class="concept-desc">
+            Security Groups are stateful, instance-level firewalls — return traffic is automatically allowed. NACLs are stateless, subnet-level — you must explicitly allow both inbound and outbound rules. Security Groups are the primary defense; NACLs add a second layer at the subnet boundary.
+          </p>
+          <span class="concept-badge">SAA-C03: Design Secure Architectures</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">Bastion Host Pattern</p>
+          <p class="concept-desc">
+            A bastion (jump host) is the single hardened entry point into a private network. It sits in the public subnet with a restricted SG (SSH from known IPs only). Private instances only allow SSH from the bastion's SG — never from the open internet. This dramatically shrinks your attack surface.
+          </p>
+          <span class="concept-badge">SAA-C03: Design Secure Architectures</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">Availability Zones</p>
+          <p class="concept-desc">
+            Subnets live in a single AZ. Spreading resources across AZs (e.g. public in us-east-1a, private in us-east-1b) is the foundation of high-availability AWS architectures. If one AZ goes down, workloads in the other AZ continue running.
+          </p>
+          <span class="concept-badge">SAA-C03: Design Resilient Architectures</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">SSH Agent Forwarding</p>
+          <p class="concept-desc">
+            Instead of copying the private key to the bastion (a security anti-pattern), SSH agent forwarding (<code style="font-family:var(--mono);color:var(--accent);">ssh -A</code>) lets the local SSH agent authenticate on behalf of the client when the bastion connects to private instances. The key never leaves the local machine.
+          </p>
+          <span class="concept-badge">Operational Security</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">Principle of Least Privilege</p>
+          <p class="concept-desc">
+            Each security group rule is as narrow as possible: the bastion SG allows port 22 only from my IP (<code style="font-family:var(--mono);color:var(--accent);">/32</code>), and the private SG references the bastion SG as the source rather than a CIDR. No resource has more access than it needs.
+          </p>
+          <span class="concept-badge">SAA-C03: Design Secure Architectures</span>
+        </div>
+
+      </div>
+
+      <!-- Personal takeaways -->
+      <div style="margin-top: 56px;">
+        <h3 style="font-family:var(--mono); font-size:15px; font-weight:700; color:var(--text); margin-bottom:24px; letter-spacing:-0.3px;" class="reveal">// personal takeaways</h3>
+        <div class="takeaways-list">
+
+          <div class="takeaway reveal">
+            <span class="takeaway-icon">›</span>
+            <p class="takeaway-text">
+              <strong>Route tables, not the IGW, are what define public vs private.</strong> Attaching an IGW to a VPC doesn't automatically make subnets public — you have to explicitly route <code style="font-family:var(--mono);color:var(--accent);">0.0.0.0/0</code> through it in that subnet's route table. Spent time debugging this before it clicked.
+            </p>
+          </div>
+
+          <div class="takeaway reveal">
+            <span class="takeaway-icon">›</span>
+            <p class="takeaway-text">
+              <strong>Security Group chaining is cleaner than CIDR rules for internal traffic.</strong> Referencing one SG as the source in another SG's rule is more robust and idiomatic than using IP ranges — it survives instance replacements and IP changes.
+            </p>
+          </div>
+
+          <div class="takeaway reveal">
+            <span class="takeaway-icon">›</span>
+            <p class="takeaway-text">
+              <strong>NACLs require explicit outbound rules.</strong> My first attempt blocked all traffic because I forgot NACLs are stateless — return traffic from an inbound connection is <em>not</em> automatically allowed. Had to add outbound ephemeral port rules (1024–65535) explicitly.
+            </p>
+          </div>
+
+          <div class="takeaway reveal">
+            <span class="takeaway-icon">›</span>
+            <p class="takeaway-text">
+              <strong>This is the foundation for almost every real AWS architecture.</strong> Load balancers, RDS, ECS clusters — they all sit inside a VPC using this exact public/private split. Understanding this at the network layer makes every higher-level service make more sense.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BACK -->
+  <div class="back-section">
+    <a href="/#projects" class="btn-outline">← back to projects</a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="logo">whereisrico<span>.dev</span></span>
+    <p>built on aws · s3 + cloudfront + route53</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const btn = document.querySelector('.theme-toggle');
+      if (html.dataset.theme === 'light') {
+        html.dataset.theme = 'dark';
+        btn.textContent = '[ light ]';
+      } else {
+        html.dataset.theme = 'light';
+        btn.textContent = '[ dark ]';
+      }
+    }
+
+    function toggleMenu() {
+      document.getElementById('navLinks').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+
+    function closeMenu() {
+      document.getElementById('navLinks').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+
+    document.addEventListener('click', function(e) {
+      const nav = document.getElementById('navLinks');
+      const hamburger = document.getElementById('hamburger');
+      if (nav.classList.contains('open') && !nav.contains(e.target) && !hamburger.contains(e.target)) {
+        closeMenu();
+      }
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

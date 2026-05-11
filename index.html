@@ -1174,7 +1174,7 @@
           <div style="color: var(--text2);">solutions architecture</div>
           <br>
           <div style="color: var(--accent);">$ echo $LOCATION</div>
-          <div style="color: var(--text2);">nassau, bahamas 🌊</div>
+          <div style="color: var(--text2);">nassau, bahamas</div>
           <br>
           <div style="color: var(--accent);">$ uptime</div>
           <div style="color: var(--text2);">grinding 24/7</div>
@@ -1196,9 +1196,14 @@
         </p>
         <p class="project-stack">S3 · CloudFront · Route 53 · ACM · Lambda · API Gateway · SES</p>
       </div>
-      <div class="project-card placeholder reveal">
-        <p>next project<br>coming soon...</p>
-      </div>
+      <a href="/vpc-bastion.html" class="project-card reveal" style="text-decoration:none;display:block;">
+        <span class="project-tag">AWS · Networking</span>
+        <p class="project-title">VPC + Bastion Host</p>
+        <p class="project-desc">
+          Designed a custom VPC with public and private subnets across two availability zones, an Internet Gateway, route tables, and a hardened bastion host as the only SSH entry point into the private network.
+        </p>
+        <p class="project-stack">VPC · EC2 · Subnets · IGW · Route Tables · Security Groups · NACLs</p>
+      </a>
     </div>
   </section>
 
