@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;}());</script>
   <style>
     :root {
       --bg: #F4F8FD;
@@ -1431,9 +1432,11 @@
       if (html.dataset.theme === 'light') {
         html.dataset.theme = 'dark';
         btn.textContent = '[ light ]';
+        localStorage.setItem('theme', 'dark');
       } else {
         html.dataset.theme = 'light';
         btn.textContent = '[ dark ]';
+        localStorage.setItem('theme', 'light');
       }
     }
 
