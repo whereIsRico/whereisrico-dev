@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-VLAN Network Design — whereisrico.dev</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    :root {
+      --bg: #F4F8FD;
+      --bg2: #FFFFFF;
+      --bg3: #EAF3FC;
+      --nav-bg: rgba(255,255,255,0.85);
+      --text: #0C2340;
+      --text2: #3A5A7A;
+      --text3: #7A97B0;
+      --accent: #2176FF;
+      --accent2: #68A4FF;
+      --accent-soft: #D6E8FF;
+      --border: rgba(33, 118, 255, 0.15);
+      --card: #FFFFFF;
+      --mono: 'Space Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --footer-bg: #0C2340;
+      --footer-text: #7A97B0;
+    }
+
+    [data-theme="dark"] {
+      --bg: #111418;
+      --bg2: #181C22;
+      --bg3: #1E2330;
+      --nav-bg: rgba(24, 28, 34, 0.9);
+      --text: #E2EAF4;
+      --text2: #8AAAC8;
+      --text3: #4A6480;
+      --accent: #68A4FF;
+      --accent2: #2176FF;
+      --accent-soft: #1A2A45;
+      --border: rgba(104, 164, 255, 0.15);
+      --card: #181C22;
+      --footer-bg: #0A0D12;
+      --footer-text: #4A6480;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--text2);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--text3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    .nav-cta {
+      background: var(--accent);
+      color: #fff !important;
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-size: 13px !important;
+      transition: opacity 0.2s !important;
+    }
+    .nav-cta:hover { opacity: 0.85; color: #fff !important; }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      transition: all 0.2s;
+    }
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+      width: 38px;
+      height: 38px;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 18px;
+      height: 2px;
+      background: var(--text2);
+      transition: all 0.25s ease;
+      border-radius: 2px;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ── PAGE HERO ── */
+    .page-hero {
+      padding: 120px 40px 80px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-hero-inner {
+      max-width: 900px;
+    }
+
+    .breadcrumb {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text3);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumb a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .breadcrumb a:hover { opacity: 0.75; }
+    .breadcrumb span { color: var(--text3); }
+
+    .project-tag {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 100px;
+      padding: 4px 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      margin-bottom: 20px;
+    }
+
+    .page-title {
+      font-family: var(--mono);
+      font-size: clamp(32px, 6vw, 56px);
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .page-desc {
+      font-size: 17px;
+      color: var(--text2);
+      font-weight: 300;
+      line-height: 1.8;
+      max-width: 680px;
+      margin-bottom: 32px;
+    }
+
+    .stack-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    /* ── SECTIONS ── */
+    .content-section {
+      padding: 80px 40px;
+    }
+    .content-section:nth-child(even) { background: var(--bg2); }
+    .content-section:nth-child(odd)  { background: var(--bg); }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: var(--mono);
+      font-size: clamp(22px, 3.5vw, 32px);
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      margin-bottom: 48px;
+    }
+
+    .section-inner {
+      max-width: 900px;
+    }
+
+    /* ── DIAGRAM ── */
+    .diagram-wrap {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      overflow-x: auto;
+    }
+
+    .diagram-wrap svg {
+      display: block;
+      width: 100%;
+      max-width: 820px;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    /* SVG diagram tokens — respond to theme */
+    .d-box         { fill: var(--card); stroke: var(--border); stroke-width: 1.5; }
+    .d-box-accent  { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+    .d-arrow       { stroke: var(--accent); stroke-width: 1.5; fill: none; marker-end: url(#arr); }
+    .d-label       { font-family: 'Space Mono', monospace; fill: var(--text); font-size: 11px; font-weight: 700; }
+    .d-sublabel    { font-family: 'Space Mono', monospace; fill: var(--text3); font-size: 10px; }
+    .d-sublabel-acc{ font-family: 'Space Mono', monospace; fill: var(--accent); font-size: 10px; }
+
+    /* VLAN-specific SVG tokens */
+    .d-vlan10-line  { stroke: var(--accent); stroke-width: 2; fill: none; }
+    .d-vlan20-line  { stroke: #28C840; stroke-width: 2; fill: none; }
+    .d-vlan30-line  { stroke: #FF8C42; stroke-width: 2; fill: none; }
+    .d-vlan10-box   { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+    .d-vlan20-box   { fill: rgba(40,200,64,0.10); stroke: #28C840; stroke-width: 1.5; }
+    .d-vlan30-box   { fill: rgba(255,140,66,0.10); stroke: #FF8C42; stroke-width: 1.5; }
+    .d-vlan10-label { font-family: 'Space Mono', monospace; fill: var(--accent); font-size: 10px; font-weight: 700; }
+    .d-vlan20-label { font-family: 'Space Mono', monospace; fill: #28C840; font-size: 10px; font-weight: 700; }
+    .d-vlan30-label { font-family: 'Space Mono', monospace; fill: #FF8C42; font-size: 10px; font-weight: 700; }
+    .d-acl-circle   { fill: var(--bg3); stroke: #FF5555; stroke-width: 1.5; }
+    .d-acl-x        { font-family: 'Space Mono', monospace; fill: #FF5555; font-size: 14px; font-weight: 700; }
+    .d-acl-label    { font-family: 'Space Mono', monospace; fill: #FF5555; font-size: 9px; }
+
+    /* ── STEPS ── */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 0 24px;
+      position: relative;
+    }
+
+    .step-number-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .step-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      border: 1.5px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    .step-line {
+      width: 2px;
+      flex: 1;
+      background: var(--border);
+      margin-top: 4px;
+      min-height: 32px;
+    }
+
+    .step:last-child .step-line { display: none; }
+
+    .step-body {
+      padding-bottom: 40px;
+    }
+
+    .step-title {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      padding-top: 8px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.8;
+      font-weight: 300;
+      margin-bottom: 14px;
+    }
+
+    .step-code {
+      background: #071120;
+      border: 1px solid rgba(68,100,128,0.25);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #8AAAC8;
+      line-height: 1.9;
+      overflow-x: auto;
+    }
+
+    .step-code .c-prompt { color: #68A4FF; }
+    .step-code .c-out    { color: #4A6480; }
+    .step-code .c-val    { color: #28C840; }
+
+    /* ── LEARNINGS ── */
+    .concepts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .concept-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .concept-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(33,118,255,0.08);
+    }
+
+    .concept-icon {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .concept-title {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .concept-desc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.75;
+      font-weight: 300;
+    }
+
+    .concept-badge {
+      display: inline-block;
+      margin-top: 12px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 100px;
+      padding: 3px 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    /* ── TAKEAWAYS ── */
+    .takeaways-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 720px;
+    }
+
+    .takeaway {
+      display: flex;
+      gap: 16px;
+      padding: 20px 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: border-color 0.2s;
+    }
+    .takeaway:hover { border-color: var(--accent); }
+
+    .takeaway-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .takeaway-text {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.8;
+      font-weight: 300;
+    }
+    .takeaway-text strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ── BACK LINK ── */
+    .back-section {
+      padding: 60px 40px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+      padding: 14px 32px;
+      border-radius: 100px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+      display: inline-block;
+    }
+    .btn-outline:hover { background: var(--accent-soft); transform: translateY(-1px); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--footer-bg);
+      padding: 32px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    footer .logo {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--footer-text);
+    }
+    footer .logo span { color: var(--accent); }
+    footer p {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--footer-text);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-hamburger { display: flex; }
+      .nav-links {
+        position: fixed;
+        top: 64px; left: 0; right: 0;
+        background: var(--nav-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        flex-direction: column;
+        padding: 8px 24px 24px;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+        display: none;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      }
+      .nav-links.open { display: flex; }
+      .nav-links li { width: 100%; }
+      .nav-links a {
+        font-size: 15px;
+        display: block;
+        padding: 14px 4px;
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-links li:last-child a {
+        border-bottom: none;
+        margin-top: 12px;
+        text-align: center;
+        border-radius: 100px;
+      }
+
+      .page-hero { padding: 100px 20px 60px; }
+      .content-section { padding: 60px 20px; }
+      .back-section { padding: 40px 20px; }
+      .step { grid-template-columns: 44px 1fr; gap: 0 16px; }
+
+      footer {
+        padding: 24px 20px;
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="nav-logo">whereisrico<span>.dev</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/#about" onclick="closeMenu()">about</a></li>
+      <li><a href="/#projects" onclick="closeMenu()">projects</a></li>
+      <li><a href="/#resume" onclick="closeMenu()">resume</a></li>
+      <li><a href="/#certifications" onclick="closeMenu()">certs</a></li>
+      <li><a href="/#contact" class="nav-cta" onclick="closeMenu()">contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="theme-toggle" onclick="toggleTheme()">[ light ]</button>
+      <button class="nav-hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <div class="page-hero-inner">
+      <div class="breadcrumb">
+        <a href="/#projects">← projects</a>
+        <span>/</span>
+        <span>multi-vlan network design</span>
+      </div>
+      <span class="project-tag">Networking · Packet Tracer</span>
+      <h1 class="page-title">Multi-VLAN<br>Network Design<br>&amp; Segmentation</h1>
+      <p class="page-desc">
+        Designed and configured a segmented enterprise network in Cisco Packet Tracer using VLANs, 802.1Q trunking, and router-on-a-stick inter-VLAN routing. Applied extended ACLs to isolate the Guest VLAN from the IT and Staff networks.
+      </p>
+      <div class="stack-row">
+        <span class="pill">VLANs</span>
+        <span class="pill">802.1Q Trunking</span>
+        <span class="pill">Router-on-a-Stick</span>
+        <span class="pill">DHCP</span>
+        <span class="pill">Extended ACLs</span>
+        <span class="pill">Wildcard Masks</span>
+        <span class="pill">Cisco IOS</span>
+        <span class="pill">Packet Tracer</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE DIAGRAM -->
+  <section class="content-section" id="diagram">
+    <div class="section-inner">
+      <p class="section-label reveal">// 01</p>
+      <h2 class="section-title reveal">Network Topology</h2>
+      <div class="diagram-wrap reveal">
+        <svg viewBox="0 0 820 490" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Multi-VLAN network topology with Cisco 2911 router and Cisco 2960 switch">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="var(--accent)" />
+            </marker>
+          </defs>
+
+          <!-- Router R1 -->
+          <rect x="295" y="18" width="230" height="72" rx="10" class="d-box-accent" />
+          <text x="410" y="47" text-anchor="middle" class="d-label">Cisco 2911 (R1)</text>
+          <text x="410" y="64" text-anchor="middle" class="d-sublabel-acc">router-on-a-stick</text>
+          <text x="410" y="80" text-anchor="middle" class="d-sublabel">fa0/0.10 · fa0/0.20 · fa0/0.30</text>
+
+          <!-- Trunk link: R1 → SW1 -->
+          <line x1="410" y1="90" x2="410" y2="170" class="d-arrow" />
+          <text x="424" y="136" class="d-sublabel-acc">trunk · 802.1Q</text>
+
+          <!-- Switch SW1 -->
+          <rect x="258" y="170" width="304" height="68" rx="10" class="d-box" />
+          <text x="410" y="199" text-anchor="middle" class="d-label">Cisco 2960 (SW1)</text>
+          <text x="410" y="216" text-anchor="middle" class="d-sublabel">1 trunk port · 3 access ports</text>
+          <text x="410" y="231" text-anchor="middle" class="d-sublabel">VLAN 10 · VLAN 20 · VLAN 30</text>
+
+          <!-- VLAN 10 (IT) branch — accent blue -->
+          <line x1="318" y1="238" x2="105" y2="376" class="d-vlan10-line" />
+          <text x="187" y="291" text-anchor="middle" class="d-vlan10-label">VLAN 10 · IT</text>
+          <text x="187" y="304" text-anchor="middle" class="d-sublabel-acc">10.0.10.0/24</text>
+
+          <!-- VLAN 20 (Staff) branch — green -->
+          <line x1="410" y1="238" x2="410" y2="376" class="d-vlan20-line" />
+          <text x="428" y="293" class="d-vlan20-label">VLAN 20 · Staff</text>
+          <text x="428" y="306" class="d-vlan20-label">10.0.20.0/24</text>
+
+          <!-- VLAN 30 (Guest) branch — orange -->
+          <line x1="502" y1="238" x2="717" y2="376" class="d-vlan30-line" />
+          <text x="656" y="262" class="d-vlan30-label">VLAN 30 · Guest</text>
+          <text x="656" y="275" class="d-vlan30-label">10.0.30.0/24</text>
+
+          <!-- ACL block marker on VLAN 30 branch (at line midpoint ~598,300) -->
+          <circle cx="598" cy="300" r="14" class="d-acl-circle" />
+          <text x="598" y="305" text-anchor="middle" class="d-acl-x">&#x2715;</text>
+          <text x="598" y="322" text-anchor="middle" class="d-acl-label">ACL: DENY</text>
+          <text x="598" y="334" text-anchor="middle" class="d-acl-label">&#x2192; IT · Staff</text>
+
+          <!-- PC1 (VLAN 10 IT) -->
+          <rect x="20" y="376" width="170" height="88" rx="10" class="d-vlan10-box" />
+          <text x="105" y="404" text-anchor="middle" class="d-label">PC-IT</text>
+          <text x="105" y="421" text-anchor="middle" class="d-vlan10-label">VLAN 10</text>
+          <text x="105" y="437" text-anchor="middle" class="d-sublabel">10.0.10.x · DHCP</text>
+          <text x="105" y="453" text-anchor="middle" class="d-sublabel">gw: 10.0.10.1</text>
+
+          <!-- PC2 (VLAN 20 Staff) -->
+          <rect x="325" y="376" width="170" height="88" rx="10" class="d-vlan20-box" />
+          <text x="410" y="404" text-anchor="middle" class="d-label">PC-Staff</text>
+          <text x="410" y="421" text-anchor="middle" class="d-vlan20-label">VLAN 20</text>
+          <text x="410" y="437" text-anchor="middle" class="d-sublabel">10.0.20.x · DHCP</text>
+          <text x="410" y="453" text-anchor="middle" class="d-sublabel">gw: 10.0.20.1</text>
+
+          <!-- PC3 (VLAN 30 Guest) -->
+          <rect x="630" y="376" width="170" height="88" rx="10" class="d-vlan30-box" />
+          <text x="715" y="404" text-anchor="middle" class="d-label">PC-Guest</text>
+          <text x="715" y="421" text-anchor="middle" class="d-vlan30-label">VLAN 30</text>
+          <text x="715" y="437" text-anchor="middle" class="d-sublabel">10.0.30.x · DHCP</text>
+          <text x="715" y="453" text-anchor="middle" class="d-sublabel">gw: 10.0.30.1</text>
+        </svg>
+      </div>
+      <p style="margin-top:16px; font-family:var(--mono); font-size:11px; color:var(--text3);">
+        All three VLANs share one physical switch and one router interface. Inter-VLAN traffic flows up to R1 and back down. The ACL on fa0/0.30 intercepts Guest traffic before routing, blocking lateral movement to IT and Staff.
+      </p>
+    </div>
+  </section>
+
+  <!-- WHAT WAS BUILT -->
+  <section class="content-section" id="steps">
+    <div class="section-inner">
+      <p class="section-label reveal">// 02</p>
+      <h2 class="section-title reveal">What Was Built</h2>
+      <div class="steps-list">
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">01</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">Create the VLANs on SW1</p>
+            <p class="step-desc">
+              Created three VLANs on the switch — <code style="font-family:var(--mono);color:var(--accent);">VLAN 10 (IT)</code>, <code style="font-family:var(--mono);color:var(--accent);">VLAN 20 (Staff)</code>, and <code style="font-family:var(--mono);color:var(--accent);">VLAN 30 (Guest)</code>. VLANs exist only in the switch's VLAN database until you assign ports to them — creating them is just the first step. Verified with <code style="font-family:var(--mono);color:var(--accent);">show vlan brief</code> to confirm all three showed as active.
+            </p>
+            <div class="step-code">
+              <span class="c-prompt">SW1# </span>conf t<br>
+              <span class="c-prompt">SW1(config)# </span>vlan 10<br>
+              <span class="c-prompt">SW1(config-vlan)# </span>name IT<br>
+              <span class="c-prompt">SW1(config-vlan)# </span>exit<br>
+              <span class="c-prompt">SW1(config)# </span>vlan 20<br>
+              <span class="c-prompt">SW1(config-vlan)# </span>name Staff<br>
+              <span class="c-prompt">SW1(config-vlan)# </span>exit<br>
+              <span class="c-prompt">SW1(config)# </span>vlan 30<br>
+              <span class="c-prompt">SW1(config-vlan)# </span>name Guest<br><br>
+              <span class="c-prompt">SW1# </span>show vlan brief<br>
+              <span class="c-val">  10  IT              active</span><br>
+              <span class="c-val">  20  Staff           active</span><br>
+              <span class="c-val">  30  Guest           active</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">02</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">Configure access ports and the trunk port</p>
+            <p class="step-desc">
+              Assigned each host-facing port to its VLAN using <code style="font-family:var(--mono);color:var(--accent);">switchport mode access</code>. The port connected to the router was configured as a trunk with <code style="font-family:var(--mono);color:var(--accent);">switchport mode trunk</code> and restricted to only carry the three VLANs in use. A trunk without an allowed VLAN list carries all VLANs by default — limiting it is cleaner.
+            </p>
+            <div class="step-code">
+              <span class="c-out">! Access port — VLAN 10 (IT)</span><br>
+              <span class="c-prompt">SW1(config)# </span>interface fa0/1<br>
+              <span class="c-prompt">SW1(config-if)# </span>switchport mode access<br>
+              <span class="c-prompt">SW1(config-if)# </span>switchport access vlan 10<br><br>
+              <span class="c-out">! Repeat fa0/2 → vlan 20, fa0/3 → vlan 30</span><br><br>
+              <span class="c-out">! Trunk port to router (fa0/24)</span><br>
+              <span class="c-prompt">SW1(config)# </span>interface fa0/24<br>
+              <span class="c-prompt">SW1(config-if)# </span>switchport mode trunk<br>
+              <span class="c-prompt">SW1(config-if)# </span>switchport trunk allowed vlan 10,20,30
+            </div>
+          </div>
+        </div>
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">03</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">Set up router-on-a-stick with dot1Q subinterfaces</p>
+            <p class="step-desc">
+              Created a logical subinterface on R1 for each VLAN, configured <code style="font-family:var(--mono);color:var(--accent);">encapsulation dot1Q</code> with the matching VLAN ID, then assigned the gateway IP. The encapsulation line must come before the IP address — IOS accepts the reverse order but inter-VLAN routing breaks silently. Enabled the physical interface with <code style="font-family:var(--mono);color:var(--accent);">no shutdown</code>.
+            </p>
+            <div class="step-code">
+              <span class="c-prompt">R1(config)# </span>interface fa0/0<br>
+              <span class="c-prompt">R1(config-if)# </span>no shutdown<br><br>
+              <span class="c-out">! VLAN 10 subinterface</span><br>
+              <span class="c-prompt">R1(config)# </span>interface fa0/0.10<br>
+              <span class="c-prompt">R1(config-subif)# </span>encapsulation dot1Q 10<br>
+              <span class="c-prompt">R1(config-subif)# </span>ip address <span class="c-val">10.0.10.1</span> 255.255.255.0<br><br>
+              <span class="c-prompt">R1(config)# </span>interface fa0/0.20<br>
+              <span class="c-prompt">R1(config-subif)# </span>encapsulation dot1Q 20<br>
+              <span class="c-prompt">R1(config-subif)# </span>ip address <span class="c-val">10.0.20.1</span> 255.255.255.0<br><br>
+              <span class="c-prompt">R1(config)# </span>interface fa0/0.30<br>
+              <span class="c-prompt">R1(config-subif)# </span>encapsulation dot1Q 30<br>
+              <span class="c-prompt">R1(config-subif)# </span>ip address <span class="c-val">10.0.30.1</span> 255.255.255.0
+            </div>
+          </div>
+        </div>
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">04</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">Configure DHCP pools with excluded ranges</p>
+            <p class="step-desc">
+              Set up a DHCP pool per VLAN on R1. The <code style="font-family:var(--mono);color:var(--accent);">excluded-address</code> command reserves the first ten IPs in each subnet before the pool starts handing them out — so routers, servers, and printers can be assigned static addresses without conflicting with DHCP leases. Each pool specifies the network, default gateway, and DNS server.
+            </p>
+            <div class="step-code">
+              <span class="c-out">! Reserve .1–.10 in each subnet for static devices</span><br>
+              <span class="c-prompt">R1(config)# </span>ip dhcp excluded-address 10.0.10.1 10.0.10.10<br>
+              <span class="c-prompt">R1(config)# </span>ip dhcp excluded-address 10.0.20.1 10.0.20.10<br>
+              <span class="c-prompt">R1(config)# </span>ip dhcp excluded-address 10.0.30.1 10.0.30.10<br><br>
+              <span class="c-prompt">R1(config)# </span>ip dhcp pool VLAN10-IT<br>
+              <span class="c-prompt">R1(dhcp-config)# </span>network 10.0.10.0 255.255.255.0<br>
+              <span class="c-prompt">R1(dhcp-config)# </span>default-router <span class="c-val">10.0.10.1</span><br>
+              <span class="c-prompt">R1(dhcp-config)# </span>dns-server 8.8.8.8<br><br>
+              <span class="c-out">! Repeat for VLAN20-Staff and VLAN30-Guest pools</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step reveal">
+          <div class="step-number-col">
+            <div class="step-num">05</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <p class="step-title">Apply an extended ACL to block Guest from IT and Staff</p>
+            <p class="step-desc">
+              Created a named extended ACL with two deny statements covering both protected subnets, then a blanket <code style="font-family:var(--mono);color:var(--accent);">permit ip any any</code> so Guest traffic can still reach the internet. Applied it <em>inbound</em> on the Guest subinterface — this intercepts traffic the moment it arrives at the router, before any routing decision is made. The wildcard mask <code style="font-family:var(--mono);color:var(--accent);">0.0.0.255</code> matches any host in the /24.
+            </p>
+            <div class="step-code">
+              <span class="c-prompt">R1(config)# </span>ip access-list extended BLOCK_GUEST<br>
+              <span class="c-prompt">R1(config-ext-nacl)# </span>deny ip <span class="c-val">10.0.30.0 0.0.0.255</span> <span class="c-val">10.0.10.0 0.0.0.255</span><br>
+              <span class="c-prompt">R1(config-ext-nacl)# </span>deny ip <span class="c-val">10.0.30.0 0.0.0.255</span> <span class="c-val">10.0.20.0 0.0.0.255</span><br>
+              <span class="c-prompt">R1(config-ext-nacl)# </span>permit ip any any<br><br>
+              <span class="c-out">! Apply inbound on Guest subinterface</span><br>
+              <span class="c-prompt">R1(config)# </span>interface fa0/0.30<br>
+              <span class="c-prompt">R1(config-subif)# </span>ip access-group BLOCK_GUEST in<br><br>
+              <span class="c-out">! Verify — Guest can't reach IT/Staff, internet still works</span><br>
+              <span class="c-prompt">PC-Guest&gt; </span>ping 10.0.10.11<br>
+              <span class="c-val">Request timeout — ACL blocking ✓</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT I LEARNED -->
+  <section class="content-section" id="learnings">
+    <div class="section-inner">
+      <p class="section-label reveal">// 03</p>
+      <h2 class="section-title reveal">What I Learned &amp; Concepts Covered</h2>
+
+      <div class="concepts-grid">
+
+        <div class="concept-card reveal">
+          <p class="concept-title">VLANs &amp; Layer 2 Segmentation</p>
+          <p class="concept-desc">
+            VLANs logically divide a single physical switch into multiple isolated broadcast domains. Hosts in VLAN 10 can't communicate with VLAN 20 at Layer 2 — the switch simply won't forward frames between them. Segmentation without VLANs would require separate physical switches per network.
+          </p>
+          <span class="concept-badge">Net+ Domain 2</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">802.1Q Trunking</p>
+          <p class="concept-desc">
+            Trunk ports carry traffic for multiple VLANs by inserting a 4-byte 802.1Q tag into each Ethernet frame containing the VLAN ID. Access ports strip the tag before delivering frames to end devices. Without trunking, you'd need a dedicated physical link per VLAN between the switch and router.
+          </p>
+          <span class="concept-badge">Net+ Domain 2</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">Access vs Trunk Ports</p>
+          <p class="concept-desc">
+            An access port belongs to exactly one VLAN — it adds no tag to outgoing frames and expects no tag on incoming ones. A trunk port carries multiple VLANs, tagging every frame except the native VLAN. Misconfiguring one as the other is the most common reason inter-VLAN routing silently fails.
+          </p>
+          <span class="concept-badge">Net+</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">Router-on-a-Stick &amp; Inter-VLAN Routing</p>
+          <p class="concept-desc">
+            One physical router interface is subdivided into logical subinterfaces, each acting as the default gateway for its VLAN. All traffic between VLANs must traverse the router — a bottleneck at scale, which is why enterprise networks use Layer 3 switches instead. For a lab, router-on-a-stick is the correct starting point.
+          </p>
+          <span class="concept-badge">Net+ / SAA-C03</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">DHCP Scopes &amp; Excluded Ranges</p>
+          <p class="concept-desc">
+            Each VLAN needs its own DHCP scope because hosts in different VLANs live in different IP subnets. The <code style="font-family:var(--mono);color:var(--accent);">excluded-address</code> command reserves addresses before the pool starts — this prevents DHCP from handing out IPs already assigned statically to gateways, servers, or printers.
+          </p>
+          <span class="concept-badge">Net+</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">Extended ACLs &amp; Wildcard Masks</p>
+          <p class="concept-desc">
+            Extended ACLs match on source IP, destination IP, protocol, and port — not just source like standard ACLs. Wildcard masks are the bitwise inverse of subnet masks: <code style="font-family:var(--mono);color:var(--accent);">0.0.0.255</code> means match any host in the /24. ACLs are processed top-down and stop at the first match — order matters.
+          </p>
+          <span class="concept-badge">Net+ / SAA-C03</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">ARP &amp; First-Ping Drop</p>
+          <p class="concept-desc">
+            The first ping to any new host always drops in this topology. The router has no ARP cache entry for the destination, so it sends an ARP request and queues the ICMP packet. The ARP reply comes back, the cache is populated, and every subsequent ping succeeds. This is expected Layer 2 behavior — not a misconfiguration.
+          </p>
+          <span class="concept-badge">Deep Dive</span>
+        </div>
+
+        <div class="concept-card reveal">
+          <p class="concept-title">Inbound vs Outbound ACL Placement</p>
+          <p class="concept-desc">
+            Applying an ACL <em>inbound</em> on a subinterface filters traffic before the routing engine processes it — more efficient and the correct pattern for blocking a source network. Outbound ACLs filter after routing and apply to egress traffic. The general rule: place extended ACLs as close to the source as possible.
+          </p>
+          <span class="concept-badge">SAA-C03</span>
+        </div>
+
+      </div>
+
+      <!-- Personal takeaways -->
+      <div style="margin-top: 56px;">
+        <h3 style="font-family:var(--mono); font-size:15px; font-weight:700; color:var(--text); margin-bottom:24px; letter-spacing:-0.3px;" class="reveal">// personal takeaways</h3>
+        <div class="takeaways-list">
+
+          <div class="takeaway reveal">
+            <span class="takeaway-icon">›</span>
+            <p class="takeaway-text">
+              <strong>The first ping always drops — and that's fine.</strong> I spent ten minutes convinced my ACL was broken before I realized it was ARP. The router queues the ICMP packet while it waits for an ARP reply. Second ping succeeds every time. Understanding why this happens is one of those things that separates memorized facts from actual networking knowledge.
+            </p>
+          </div>
+
+          <div class="takeaway reveal">
+            <span class="takeaway-icon">›</span>
+            <p class="takeaway-text">
+              <strong>Wildcard masks are the inverse of subnet masks, not the same thing.</strong> <code style="font-family:var(--mono);color:var(--accent);">0.0.0.255</code> matches 256 hosts — the entire /24. The zero bits mean "must match this bit exactly," the one bits mean "don't care." It clicked once I stopped thinking about them like subnet masks and started thinking about them as bit-level filters.
+            </p>
+          </div>
+
+          <div class="takeaway reveal">
+            <span class="takeaway-icon">›</span>
+            <p class="takeaway-text">
+              <strong><code style="font-family:var(--mono);color:var(--accent);">permit ip any any</code> at the end is not optional.</strong> Every ACL has an implicit deny-all at the bottom. Without the explicit permit, the ACL would block all Guest traffic — including internet access — not just lateral movement to IT and Staff. The goal is controlled segmentation, not complete isolation.
+            </p>
+          </div>
+
+          <div class="takeaway reveal">
+            <span class="takeaway-icon">›</span>
+            <p class="takeaway-text">
+              <strong>This is directly on the Net+ exam — and now it makes sense.</strong> I'd memorized VLAN concepts from flashcards, but building it end-to-end in Packet Tracer made the theory stick. The moment inter-VLAN ping worked for the first time after configuring the subinterfaces, the whole model clicked in a way studying never did.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BACK -->
+  <div class="back-section">
+    <a href="/#projects" class="btn-outline">← back to projects</a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="logo">whereisrico<span>.dev</span></span>
+    <p>built on aws · s3 + cloudfront + route53</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const btn = document.querySelector('.theme-toggle');
+      if (html.dataset.theme === 'light') {
+        html.dataset.theme = 'dark';
+        btn.textContent = '[ light ]';
+      } else {
+        html.dataset.theme = 'light';
+        btn.textContent = '[ dark ]';
+      }
+    }
+
+    function toggleMenu() {
+      document.getElementById('navLinks').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+
+    function closeMenu() {
+      document.getElementById('navLinks').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+
+    document.addEventListener('click', function(e) {
+      const nav = document.getElementById('navLinks');
+      const hamburger = document.getElementById('hamburger');
+      if (nav.classList.contains('open') && !nav.contains(e.target) && !hamburger.contains(e.target)) {
+        closeMenu();
+      }
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
